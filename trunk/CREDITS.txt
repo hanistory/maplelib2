@@ -1,0 +1,6 @@
+OWNER
+snow
+
+CONTRIBUTORS
+jonyleeson (Original WzLib)
+HaHa(HaRepacker)
