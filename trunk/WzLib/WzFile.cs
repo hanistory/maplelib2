@@ -518,7 +518,7 @@ namespace MapleLib.WzLib
 		public IWzObject GetObjectFromPath(string path)
 		{
 			string[] seperatedPath = path.Split("/".ToCharArray());
-			if (seperatedPath[0] != name)
+			if (seperatedPath[0].ToLower() != wzDir.name)
 				return null;
 			if (seperatedPath.Length == 1)
 				return WzDirectory;

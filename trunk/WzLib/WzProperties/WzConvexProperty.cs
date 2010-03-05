@@ -33,6 +33,18 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override IWzImageProperty DeepClone()
+        {
+            /*WzConvexProperty clone = new WzConvexProperty(name);
+            clone.parent = parent;
+            clone.imgParent = imgParent;*/
+            WzConvexProperty clone = (WzConvexProperty)MemberwiseClone();
+            clone.properties.Clear();
+            foreach (WzExtendedProperty prop in properties)
+                clone.properties.Add((WzExtendedProperty)prop.DeepClone());
+            return clone;
+        }
+
 		/// <summary>
 		/// The parent of the object
 		/// </summary>

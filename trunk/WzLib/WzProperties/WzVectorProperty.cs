@@ -32,6 +32,17 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override IWzImageProperty DeepClone()
+        {
+            /*WzVectorProperty clone = new WzVectorProperty(name, x.DeepClone(), y.DeepClone());
+            clone.parent = parent;
+            clone.imgParent = imgParent;*/
+            WzVectorProperty clone = (WzVectorProperty)MemberwiseClone();
+            clone.x = (WzCompressedIntProperty)x.DeepClone();
+            clone.y = (WzCompressedIntProperty)y.DeepClone();
+            return clone;
+        }
+
 		public override object WzValue { get { return new System.Drawing.Point(x.Value, y.Value); } }
 		/// <summary>
 		/// The parent of the object

@@ -32,6 +32,15 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override IWzImageProperty DeepClone()
+        {
+            /*WzUnsignedShortProperty clone = new WzUnsignedShortProperty(name, val);
+            clone.parent = parent;
+            clone.imgParent = imgParent;*/
+            WzUnsignedShortProperty clone = (WzUnsignedShortProperty)MemberwiseClone();
+            return clone;
+        }
+
 		public override object WzValue { get { return Value; } }
 		/// <summary>
 		/// The parent of the object

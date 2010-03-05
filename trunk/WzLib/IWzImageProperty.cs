@@ -36,6 +36,8 @@ namespace MapleLib.WzLib
 
 		public abstract void WriteValue(WzBinaryWriter writer);
 
+        public abstract IWzImageProperty DeepClone();
+
 		public virtual void ExportXml(StreamWriter writer, int level)
 		{
 			writer.WriteLine(XmlUtil.Indentation(level) + XmlUtil.OpenNamedTag(this.PropertyType.ToString(), this.Name, true));

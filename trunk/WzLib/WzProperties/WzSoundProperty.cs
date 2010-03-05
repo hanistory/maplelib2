@@ -40,6 +40,15 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override IWzImageProperty DeepClone()
+        {
+            /*WzSoundProperty clone = new WzSoundProperty(name);
+            clone.parent = parent;
+            clone.imgParent = imgParent;*/
+            WzSoundProperty clone = (WzSoundProperty)MemberwiseClone();
+            return clone;
+        }
+
 		public override object WzValue { get { return SoundData; } }
 		/// <summary>
 		/// The parent of the object

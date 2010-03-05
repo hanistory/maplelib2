@@ -43,6 +43,15 @@ namespace MapleLib.WzLib
         internal bool changed = false;
 		#endregion
 
+        public WzImage DeepClone()
+        {
+            WzImage clone = (WzImage)MemberwiseClone();
+            clone.properties.Clear();
+            foreach (IWzImageProperty prop in properties)
+                clone.properties.Add(prop.DeepClone());
+            return clone;
+        }
+
 		/// <summary>
 		/// The parent of the object
 		/// </summary>
