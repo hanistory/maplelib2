@@ -25,7 +25,7 @@ namespace MapleLib.WzLib
 	/// <summary>
 	/// A .img contained in a wz directory
 	/// </summary>
-    public class WzImage : IWzNonDirectoryProperty, IPropertyContainer
+    public class WzImage : IWzObject, IPropertyContainer
 	{
 		//TODO: nest wzproperties in a wzsubproperty inside of WzImage
 
@@ -84,7 +84,7 @@ namespace MapleLib.WzLib
 		/// <summary>
 		/// The properties contained in the image
 		/// </summary>
-		public override IWzImageProperty[] WzProperties
+		public List<IWzImageProperty> WzProperties
 		{
 			get
 			{
@@ -92,20 +92,7 @@ namespace MapleLib.WzLib
 				{
 					ParseImage();
 				}
-
-				List<IWzImageProperty> imgProperties = new List<IWzImageProperty>();
-				foreach (IWzImageProperty iwp in properties)
-				{
-					if (iwp.PropertyType == WzPropertyType.Extended)
-					{
-						imgProperties.Add(((WzExtendedProperty)iwp).ExtendedProperty);
-					}
-					else
-					{
-						imgProperties.Add(iwp);
-					}
-				}
-				return imgProperties.ToArray();
+                return properties;
 			}
 		}
 
@@ -114,17 +101,14 @@ namespace MapleLib.WzLib
 		/// </summary>
 		/// <param name="name">The name of the property</param>
 		/// <returns>The wz property with the specified name</returns>
-		public override IWzImageProperty this[string name]
+		public IWzImageProperty this[string name]
 		{
 			get
 			{
 				if (reader != null) if (!parsed) ParseImage();
-				foreach (IWzImageProperty iwp in properties)
-					if (iwp.Name.ToLower() == name.ToLower())
-						if (iwp.PropertyType == WzPropertyType.Extended)
-							return ((WzExtendedProperty)iwp).ExtendedProperty;
-						else
-							return iwp;
+                foreach (IWzImageProperty iwp in properties)
+                    if (iwp.Name.ToLower() == name.ToLower())
+                        return iwp;
 				return null;
 			}
 		}
@@ -134,7 +118,7 @@ namespace MapleLib.WzLib
 		/// </summary>
 		/// <param name="path">path to object</param>
 		/// <returns>the selected WzImageProperty</returns>
-		public override IWzImageProperty GetFromPath(string path)
+		public IWzImageProperty GetFromPath(string path)
 		{
 			if (reader != null) if (!parsed) ParseImage();
 
@@ -146,7 +130,7 @@ namespace MapleLib.WzLib
 
 			//hack method of adding the properties
 			WzSubProperty childProperties = new WzSubProperty();
-			childProperties.AddProperties(properties.ToArray());
+			childProperties.AddProperties(properties);
 
 			IWzImageProperty ret = childProperties;
 			for (int x = 0; x < segments.Length; x++)
@@ -156,14 +140,7 @@ namespace MapleLib.WzLib
 				{
 					if (iwp.Name == segments[x])
 					{
-						if (iwp.PropertyType == WzPropertyType.Extended)
-						{
-							ret = ((WzExtendedProperty)iwp).ExtendedProperty;
-						}
-						else
-						{
-							ret = iwp;
-						}
+                        ret = iwp;
 						foundChild = true;
 						break;
 					}
@@ -297,7 +274,7 @@ namespace MapleLib.WzLib
             prop.Parent = this;
             prop.ParentImage = this;
 			if (reader != null) if (!parsed) ParseImage();
-			switch (prop.PropertyType)
+			/*switch (prop.PropertyType)
 			{
 				case WzPropertyType.SubProperty:
 				case WzPropertyType.Vector:
@@ -310,9 +287,10 @@ namespace MapleLib.WzLib
 				default:
 					properties.Add(prop);
 					return;
-			}
+			}*/
+            properties.Add(prop);
 		}
-		public void AddProperties(IWzImageProperty[] props)
+		public void AddProperties(List<IWzImageProperty> props)
 		{
 			foreach (IWzImageProperty prop in props)
 			{

@@ -26,9 +26,9 @@ namespace MapleLib.WzLib
     /// <summary>
     /// An interface for properties which are not WzDirectory (mostly used for UOL resolving)
     /// </summary>
-    public abstract class IWzNonDirectoryProperty : IWzObject
+    /*public abstract class IWzNonDirectoryProperty : IWzObject
     {
-        public virtual IWzImageProperty[] WzProperties { get { return null; } }
+        public virtual List<IWzImageProperty> WzProperties { get { return null; } }
 
         public virtual object WzValue { get { return null; } }
 
@@ -38,5 +38,5 @@ namespace MapleLib.WzLib
         {
             return null;
         }
-    }
+    }*/
 }

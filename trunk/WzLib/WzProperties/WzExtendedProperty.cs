@@ -13,16 +13,16 @@
 
  * You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
-
+/*
 using System.IO;
 using MapleLib.WzLib.Util;
 
 namespace MapleLib.WzLib.WzProperties
-{
+{*/
 	/// <summary>
 	/// A wz property that extends to a different property
 	/// </summary>
-	public class WzExtendedProperty : IWzImageProperty
+	/*public class WzExtendedPropertyT : IWzImageProperty
 	{
 		#region Fields
 		internal IWzImageProperty extendedProperty;
@@ -40,8 +40,8 @@ namespace MapleLib.WzLib.WzProperties
             /*WzExtendedProperty clone = new WzExtendedProperty(offset,endOfBlock, name);
             clone.parent = parent;
             clone.imgParent = imgParent;
-            clone.reader = reader;*/
-            WzExtendedProperty clone = (WzExtendedProperty)MemberwiseClone();
+            clone.reader = reader;
+            WzExtendedPropertyT clone = (WzExtendedPropertyT)MemberwiseClone();
             clone.extendedProperty = extendedProperty.DeepClone();
             return clone;
         }
@@ -61,8 +61,8 @@ namespace MapleLib.WzLib.WzProperties
 		/// <summary>
 		/// The WzPropertyType of the property
 		/// </summary>
-		public override WzPropertyType PropertyType { get { return WzPropertyType.Extended; } }
-		public override void WriteValue(WzBinaryWriter writer)
+		public override WzPropertyType PropertyType { get { return WzPropertyType.ByteFloat; } }*/
+		/*public override void WriteValue(WzBinaryWriter writer)
 		{
 			writer.Write((byte)9);
 			long beforePos = writer.BaseStream.Position;
@@ -73,8 +73,8 @@ namespace MapleLib.WzLib.WzProperties
 			writer.BaseStream.Position = beforePos;
 			writer.Write(len - 4);
 			writer.BaseStream.Position = newPos;
-		}
-		/// <summary>
+		}*/
+		/*/// <summary>
 		/// Dispose the object
 		/// </summary>
 		public override void Dispose()
@@ -93,21 +93,21 @@ namespace MapleLib.WzLib.WzProperties
 		/// <summary>
 		/// Creates a blank WzEntendedProperty
 		/// </summary>
-		public WzExtendedProperty() { }
+		public WzExtendedPropertyT() { }
 		/// <summary>
 		/// Creates a WzExtendedProperty with the specified name
 		/// </summary>
 		/// <param name="name">The name of the property</param>
-		public WzExtendedProperty(string name)
+		public WzExtendedPropertyT(string name)
 		{
 			this.name = name;
 		}
-		internal WzExtendedProperty(uint offset, string name)
+		internal WzExtendedPropertyT(uint offset, string name)
 		{
 			this.name = name;
 			this.offset = offset;
 		}
-		internal WzExtendedProperty(uint offset, int eob, string name)
+        internal WzExtendedPropertyT(uint offset, int eob, string name)
 		{
 			endOfBlock = eob;
 			this.name = name;
@@ -116,6 +116,11 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Parsing Methods
+
+
+
+
+
 		/// <summary>
 		/// Parses the extended property
 		/// </summary>
@@ -171,7 +176,7 @@ namespace MapleLib.WzLib.WzProperties
 					int convexEntryCount = reader.ReadCompressedInt();
 					for (int i = 0; i < convexEntryCount; i++)
 					{
-						WzExtendedProperty exProp = new WzExtendedProperty(offset, name) { Parent = convexProp, ParentImage = imgParent };
+                        WzExtendedPropertyT exProp = new WzExtendedPropertyT(offset, name) { Parent = convexProp, ParentImage = imgParent };
 						exProp.ParseExtendedProperty(reader);
 						convexProp.AddProperty(exProp);
 					}
@@ -198,4 +203,4 @@ namespace MapleLib.WzLib.WzProperties
 		}
 		#endregion
 	}
-}
+}*/

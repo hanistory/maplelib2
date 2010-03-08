@@ -53,10 +53,6 @@ namespace MapleLib.WzLib.WzProperties
 		/// </summary>
 		public override WzPropertyType PropertyType { get { return WzPropertyType.Null; } }
 		/// <summary>
-		/// The properties contained in the property
-		/// </summary>
-		public override IWzImageProperty[] WzProperties { get { return null; } }
-		/// <summary>
 		/// The name of the property
 		/// </summary>
 		/// 

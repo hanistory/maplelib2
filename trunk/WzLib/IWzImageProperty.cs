@@ -26,8 +26,20 @@ namespace MapleLib.WzLib
 	/// <summary>
 	/// An interface for wz img properties
 	/// </summary>
-	public abstract class IWzImageProperty : IWzNonDirectoryProperty
-	{
+	public abstract class IWzImageProperty : IWzObject
+    {
+        #region Virtual\Abstrcat Members
+        public virtual List<IWzImageProperty> WzProperties { get { return null; } }
+
+        public virtual object WzValue { get { return null; } }
+
+        public virtual IWzImageProperty this[string name] { get { return null; } }
+
+        public virtual IWzImageProperty GetFromPath(string path)
+        {
+            return null;
+        }
+
 		public abstract WzPropertyType PropertyType { get; }
 
 		public abstract WzImage ParentImage { get; internal set; }
@@ -42,20 +54,24 @@ namespace MapleLib.WzLib
 		{
 			writer.WriteLine(XmlUtil.Indentation(level) + XmlUtil.OpenNamedTag(this.PropertyType.ToString(), this.Name, true));
 			writer.WriteLine(XmlUtil.Indentation(level) + XmlUtil.CloseTag(this.PropertyType.ToString()));
-		}
+        }
+        #endregion
 
-		internal static void WritePropertyList(WzBinaryWriter writer, IWzImageProperty[] properties)
+        internal static void WritePropertyList(WzBinaryWriter writer, List<IWzImageProperty> properties)
 		{
 			writer.Write((ushort)0);
-			writer.WriteCompressedInt(properties.Length);
-			for (int i = 0; i < properties.Length; i++)
+			writer.WriteCompressedInt(properties.Count);
+            for (int i = 0; i < properties.Count; i++)
 			{
 				writer.WriteStringValue(properties[i].Name, 0x00, 0x01);
-				properties[i].WriteValue(writer);
+                if (properties[i] is IExtended)
+                    WriteExtendedValue(writer, (IExtended)properties[i]);
+                else
+                    properties[i].WriteValue(writer);
 			}
 		}
 
-		internal static void DumpPropertyList(StreamWriter writer, int level, IWzImageProperty[] properties)
+		internal static void DumpPropertyList(StreamWriter writer, int level, List<IWzImageProperty> properties)
 		{
 			foreach (IWzImageProperty prop in properties)
 			{
@@ -63,10 +79,10 @@ namespace MapleLib.WzLib
 			}
 		}
 
-		internal static IWzImageProperty[] ParsePropertyList(uint offset, WzBinaryReader reader, IWzObject parent, WzImage parentImg)
+		internal static List<IWzImageProperty> ParsePropertyList(uint offset, WzBinaryReader reader, IWzObject parent, WzImage parentImg)
 		{
-			List<IWzImageProperty> properties = new List<IWzImageProperty>();
 			int entryCount = reader.ReadCompressedInt();
+            List<IWzImageProperty> properties = new List<IWzImageProperty>(entryCount);
 			for (int i = 0; i < entryCount; i++)
 			{
 				string name = reader.ReadStringBlock(offset);
@@ -97,17 +113,96 @@ namespace MapleLib.WzLib
 						break;
 					case 9:
 						int eob = (int)(reader.ReadUInt32() + reader.BaseStream.Position);
-						WzExtendedProperty exProp = new WzExtendedProperty(offset, eob, name);
-						exProp.Parent = parent;
-						exProp.ParentImage = parentImg;
-						exProp.ParseExtendedProperty(reader);
+                        IWzImageProperty exProp = ParseExtendedProp(reader, offset, eob, name, parent, parentImg);
 						properties.Add(exProp);
 						if (reader.BaseStream.Position != eob) reader.BaseStream.Position = eob;
 						break;
+                    default:
+                        throw new Exception("Unknown property type at ParsePropertyList");
 				}
 			}
-			return properties.ToArray();
+			return properties;
 		}
+
+        internal static IExtended ParseExtendedProp(WzBinaryReader reader, uint offset, int endOfBlock, string name, IWzObject parent, WzImage imgParent)
+        {
+            switch (reader.ReadByte())
+            {
+                case 0x1B:
+                    return ExtractMore(reader, offset, endOfBlock, name, reader.ReadStringAtOffset(offset + reader.ReadInt32()), parent, imgParent);
+                case 0x73:
+                    return ExtractMore(reader, offset, endOfBlock, name, "", parent, imgParent);
+                default:
+                    throw new System.Exception("Invlid byte read at ParseExtendedProp");
+            }
+        }
+
+        internal static IExtended ExtractMore(WzBinaryReader reader, uint offset, int eob, string name, string iname, IWzObject parent, WzImage imgParent)
+        {
+            if (iname == "")
+                iname = reader.ReadString();
+            switch (iname)
+            {
+                case "Property":
+                    WzSubProperty subProp = new WzSubProperty(name) { Parent = parent, ParentImage = imgParent };
+                    reader.BaseStream.Position += 2;
+                    subProp.AddProperties(IWzImageProperty.ParsePropertyList(offset, reader, subProp, imgParent));
+                    return subProp;
+                case "Canvas":
+                    WzCanvasProperty canvasProp = new WzCanvasProperty(name) { Parent = parent, ParentImage = imgParent };
+                    reader.BaseStream.Position++;
+                    if (reader.ReadByte() == 1)
+                    {
+                        reader.BaseStream.Position += 2;
+                        canvasProp.AddProperties(IWzImageProperty.ParsePropertyList(offset, reader, canvasProp, imgParent));
+                    }
+                    canvasProp.PngProperty = new WzPngProperty(reader) { Parent = canvasProp, ParentImage = imgParent };
+                    return canvasProp;
+                case "Shape2D#Vector2D":
+                    WzVectorProperty vecProp = new WzVectorProperty(name) { Parent = parent, ParentImage = imgParent };
+                    vecProp.X = new WzCompressedIntProperty("X", reader.ReadCompressedInt()) { Parent = vecProp, ParentImage = imgParent };
+                    vecProp.Y = new WzCompressedIntProperty("Y", reader.ReadCompressedInt()) { Parent = vecProp, ParentImage = imgParent };
+                    return vecProp;
+                case "Shape2D#Convex2D":
+                    WzConvexProperty convexProp = new WzConvexProperty(name) { Parent = parent, ParentImage = imgParent };
+                    int convexEntryCount = reader.ReadCompressedInt();
+                    convexProp.WzProperties.Capacity = convexEntryCount; //performance thing
+                    for (int i = 0; i < convexEntryCount; i++)
+                    {
+                        convexProp.AddProperty(ParseExtendedProp(reader, offset, 0, name, convexProp, imgParent));
+                    }
+                    return convexProp;
+                case "Sound_DX8":
+                    WzSoundProperty soundProp = new WzSoundProperty(name) { Parent = parent, ParentImage = imgParent };
+                    soundProp.ParseSound(reader);
+                    return soundProp;
+                case "UOL":
+                    reader.BaseStream.Position++;
+                    switch (reader.ReadByte())
+                    {
+                        case 0:
+                            return new WzUOLProperty(name, reader.ReadString()) { Parent = parent, ParentImage = imgParent };
+                        case 1:
+                            return new WzUOLProperty(name, reader.ReadStringAtOffset(offset + reader.ReadInt32())) { Parent = parent, ParentImage = imgParent };
+                    }
+                    throw new Exception("Unsupported UOL type");
+                default:
+                    throw new Exception("Unknown iname: " + iname);
+            }
+        }
+
+        internal static void WriteExtendedValue(WzBinaryWriter writer, IExtended property)
+        {
+            writer.Write((byte)9);
+            long beforePos = writer.BaseStream.Position;
+            writer.Write(0); // Placeholder
+            property.WriteValue(writer);
+            int len = (int)(writer.BaseStream.Position - beforePos);
+            long newPos = writer.BaseStream.Position;
+            writer.BaseStream.Position = beforePos;
+            writer.Write(len - 4);
+            writer.BaseStream.Position = newPos;
+        }
 
 		#region Cast Values
 

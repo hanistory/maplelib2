@@ -23,7 +23,7 @@ namespace MapleLib.WzLib.WzProperties
 	/// <summary>
 	/// A property that can contain sub properties and has one png image
 	/// </summary>
-	public class WzCanvasProperty : IWzImageProperty, IPropertyContainer
+    public class WzCanvasProperty : IExtended, IPropertyContainer
 	{
 		#region Fields
 		internal List<IWzImageProperty> properties = new List<IWzImageProperty>();
@@ -63,23 +63,11 @@ namespace MapleLib.WzLib.WzProperties
 		/// <summary>
 		/// The properties contained in this property
 		/// </summary>
-		public override IWzImageProperty[] WzProperties
+		public override List<IWzImageProperty> WzProperties
 		{
 			get
 			{
-				List<IWzImageProperty> imgProperties = new List<IWzImageProperty>();
-				foreach (IWzImageProperty iwp in properties)
-				{
-					if (iwp.PropertyType == WzPropertyType.Extended)
-					{
-						imgProperties.Add(((WzExtendedProperty)iwp).ExtendedProperty);
-					}
-					else
-					{
-						imgProperties.Add(iwp);
-					}
-				}
-				return imgProperties.ToArray();
+				return properties;
 			}
 		}
 		/// <summary>
@@ -99,14 +87,20 @@ namespace MapleLib.WzLib.WzProperties
 					return imageProp;
 				foreach (IWzImageProperty iwp in properties)
 					if (iwp.Name.ToLower() == name.ToLower())
-						if (iwp.PropertyType == WzPropertyType.Extended)
-							return ((WzExtendedProperty)iwp).ExtendedProperty;
-						else
-							return iwp;
+                        return iwp;
 				//throw new KeyNotFoundException("A wz property with the specified name was not found");
 				return null;
 			}
 		}
+
+        public IWzImageProperty GetProperty(string name)
+        {
+            foreach (IWzImageProperty iwp in properties)
+                if (iwp.Name.ToLower() == name.ToLower())
+                    return iwp;
+            return null;
+        }
+
 		/// Gets a wz property by a path name
 		/// </summary>
 		/// <param name="path">path to property</param>
@@ -149,7 +143,7 @@ namespace MapleLib.WzLib.WzProperties
 			if (properties.Count > 0)
 			{
 				writer.Write((byte)1);
-				IWzImageProperty.WritePropertyList(writer, properties.ToArray());
+				IWzImageProperty.WritePropertyList(writer, properties);
 			}
 			else
 			{
@@ -214,22 +208,9 @@ namespace MapleLib.WzLib.WzProperties
 		{
             prop.Parent = this;
             prop.ParentImage = this.ParentImage;
-			switch (prop.PropertyType)
-			{
-				case WzPropertyType.SubProperty:
-				case WzPropertyType.Vector:
-				case WzPropertyType.UOL:
-				case WzPropertyType.Canvas:
-				case WzPropertyType.Convex:
-				case WzPropertyType.Sound:
-					properties.Add(new WzExtendedProperty(prop.Name) { ExtendedProperty = prop });
-					return;
-				default:
-					properties.Add(prop);
-					return;
-			}
+            properties.Add(prop);
 		}
-		public void AddProperties(IWzImageProperty[] props)
+		public void AddProperties(List<IWzImageProperty> props)
 		{
 			foreach (IWzImageProperty prop in props)
 			{
@@ -242,7 +223,7 @@ namespace MapleLib.WzLib.WzProperties
 		/// <param name="name">Name of Property</param>
 		public void RemoveProperty(string name)
 		{
-			properties.Remove(this[name]);
+			properties.Remove(GetProperty(name));
 		}
 
 		/// <summary>

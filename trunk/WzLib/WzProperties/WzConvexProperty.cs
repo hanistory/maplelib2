@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using MapleLib.WzLib.Util;
@@ -23,10 +24,10 @@ namespace MapleLib.WzLib.WzProperties
 	/// <summary>
 	/// A property that contains several WzExtendedPropertys
 	/// </summary>
-	public class WzConvexProperty : IWzImageProperty
+	public class WzConvexProperty : IExtended, IPropertyContainer
 	{
 		#region Fields
-		internal List<WzExtendedProperty> properties = new List<WzExtendedProperty>();
+        internal List<IExtended> properties = new List<IExtended>();
 		internal string name;
 		internal IWzObject parent;
 		internal WzImage imgParent;
@@ -40,9 +41,30 @@ namespace MapleLib.WzLib.WzProperties
             clone.imgParent = imgParent;*/
             WzConvexProperty clone = (WzConvexProperty)MemberwiseClone();
             clone.properties.Clear();
-            foreach (WzExtendedProperty prop in properties)
-                clone.properties.Add((WzExtendedProperty)prop.DeepClone());
+            foreach (IWzImageProperty prop in properties)
+                clone.properties.Add((IExtended)prop.DeepClone());
             return clone;
+        }
+
+        public void AddProperty(IExtended prop)
+        {
+            ((IWzImageProperty)prop).Parent = this;
+            ((IWzImageProperty)prop).ParentImage = this.ParentImage;
+            if (prop is IExtended)
+                properties.Add(prop);
+            else throw new Exception("Convex can only hold extended properties");
+        }
+
+        public void AddProperties(IExtended[] props)
+        {
+            foreach (IExtended prop in props)
+            {
+                AddProperty(prop);
+            }
+        }
+        public void RemoveProperty(string name)
+        {
+            properties.Remove((IExtended)this[name]);
         }
 
 		/// <summary>
@@ -60,16 +82,11 @@ namespace MapleLib.WzLib.WzProperties
 		/// <summary>
 		/// The properties contained in the property
 		/// </summary>
-		public override IWzImageProperty[] WzProperties
+		public override List<IWzImageProperty> WzProperties
 		{
 			get
 			{
-				List<IWzImageProperty> imgProperties = new List<IWzImageProperty>();
-				foreach (WzExtendedProperty exProp in properties)
-				{
-					imgProperties.Add(exProp.ExtendedProperty);
-				}
-				return imgProperties.ToArray();
+                return properties.ConvertAll<IWzImageProperty>(new Converter<IExtended, IWzImageProperty>(delegate(IExtended source) { return (IWzImageProperty)source; }));
 			}
 		}
 		/// <summary>
@@ -85,13 +102,22 @@ namespace MapleLib.WzLib.WzProperties
 		{
 			get
 			{
-				foreach (WzExtendedProperty iwp in properties)
+                foreach (IWzImageProperty iwp in properties)
 					if (iwp.Name.ToLower() == name.ToLower())
-						return iwp.ExtendedProperty;
+						return iwp;
 				//throw new KeyNotFoundException("A wz property with the specified name was not found");
 				return null;
 			}
 		}
+
+        public IWzImageProperty GetProperty(string name)
+        {
+            foreach (IWzImageProperty iwp in properties)
+                if (iwp.Name.ToLower() == name.ToLower())
+                    return iwp;
+            return null;
+        }
+
 		/// <summary>
 		/// Gets a wz property by a path name
 		/// </summary>
@@ -112,14 +138,7 @@ namespace MapleLib.WzLib.WzProperties
 				{
 					if (iwp.Name == segments[x])
 					{
-						if (iwp.PropertyType == WzPropertyType.Extended)
-						{
-							ret = ((WzExtendedProperty)iwp).ExtendedProperty;
-						}
-						else
-						{
-							ret = iwp;
-						}
+                        ret = iwp;
 						foundChild = true;
 						break;
 					}
@@ -134,10 +153,10 @@ namespace MapleLib.WzLib.WzProperties
 		public override void WriteValue(MapleLib.WzLib.Util.WzBinaryWriter writer)
 		{
 			writer.WriteStringValue("Shape2D#Convex2D", 0x73, 0x1B);
-			writer.WriteCompressedInt(ExtendedProperties.Length);
-			for (int i = 0; i < ExtendedProperties.Length; i++)
+			writer.WriteCompressedInt(ExtendedProperties.Count);
+            for (int i = 0; i < ExtendedProperties.Count; i++)
 			{
-				ExtendedProperties[i].ExtendedProperty.WriteValue(writer);
+                properties[i].WriteValue(writer);
 			}
 		}
 		public override void ExportXml(StreamWriter writer, int level)
@@ -149,7 +168,7 @@ namespace MapleLib.WzLib.WzProperties
 		public override void Dispose()
 		{
 			name = null;
-			foreach (WzExtendedProperty exProp in properties)
+            foreach (IWzImageProperty exProp in properties)
 				exProp.Dispose();
 			properties.Clear();
 			properties = null;
@@ -160,7 +179,7 @@ namespace MapleLib.WzLib.WzProperties
 		/// <summary>
 		/// The WzExtendedPropertys contained in this WzConvexProperty
 		/// </summary>
-		public WzExtendedProperty[] ExtendedProperties { get { return properties.ToArray(); } }
+        public List<IExtended> ExtendedProperties { get { return properties; } }
 		/// <summary>
 		/// Creates a blank WzConvexProperty
 		/// </summary>
@@ -177,12 +196,21 @@ namespace MapleLib.WzLib.WzProperties
 		/// Adds a WzExtendedProperty to the list of properties
 		/// </summary>
 		/// <param name="prop">The property to add</param>
-		public void AddProperty(WzExtendedProperty prop)
+        public void AddProperty(IWzImageProperty prop)
 		{
+            if (!(prop is IExtended))
+                throw new Exception("Property is not IExtended");
             prop.Parent = this;
             prop.ParentImage = this.ParentImage;
-			properties.Add(prop);
+			properties.Add((IExtended)prop);
 		}
+
+        public void AddProperties(List<IWzImageProperty> properties)
+        {
+            foreach (IWzImageProperty property in properties)
+                AddProperty(property);
+        }
+
 		public void ClearProperties()
 		{
 			properties.Clear();

@@ -85,6 +85,7 @@ namespace MapleLib.WzLib
 
 		public override void Dispose()
 		{
+            if (wzDir.reader == null) return;
 			wzDir.reader.Close();
 			Header = null;
 			path = null;
@@ -345,19 +346,19 @@ namespace MapleLib.WzLib
 		/// </summary>
 		/// <param name="path">The path to the object(s)</param>
 		/// <returns>An array of IWzObjects containing the found objects</returns>
-		public IWzObject[] GetObjectsFromWildcardPath(string path)
+		public List<IWzObject> GetObjectsFromWildcardPath(string path)
 		{
-			if (path.ToLower() == name.ToLower())
-				return new IWzObject[] { WzDirectory };
-			else if (path == "*")
-			{
-				List<IWzObject> fullList = new List<IWzObject>();
-				fullList.Add(WzDirectory);
-				fullList.AddRange(GetObjectsFromDirectory(WzDirectory));
-				return fullList.ToArray();
-			}
-			else if (!path.Contains("*"))
-				return new IWzObject[] { GetObjectFromPath(path) };
+            if (path.ToLower() == name.ToLower())
+                return new List<IWzObject> { WzDirectory };
+            else if (path == "*")
+            {
+                List<IWzObject> fullList = new List<IWzObject>();
+                fullList.Add(WzDirectory);
+                fullList.AddRange(GetObjectsFromDirectory(WzDirectory));
+                return fullList;
+            }
+            else if (!path.Contains("*"))
+                return new List<IWzObject> { GetObjectFromPath(path) };
 			string[] seperatedNames = path.Split("/".ToCharArray());
 			if (seperatedNames.Length == 2 && seperatedNames[1] == "*")
 				return GetObjectsFromDirectory(WzDirectory);
@@ -372,13 +373,13 @@ namespace MapleLib.WzLib
 						objList.Add(GetObjectFromPath(spath));
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			return objList.ToArray();
+			return objList;
 		}
 
-		public IWzObject[] GetObjectsFromRegexPath(string path)
+		public List<IWzObject> GetObjectsFromRegexPath(string path)
 		{
 			if (path.ToLower() == name.ToLower())
-				return new IWzObject[] { WzDirectory };
+                return new List<IWzObject> { WzDirectory };
 			List<IWzObject> objList = new List<IWzObject>();
 			foreach (WzImage img in WzDirectory.WzImages)
 				foreach (string spath in GetPathsFromImage(img, name + "/" + img.Name))
@@ -390,10 +391,10 @@ namespace MapleLib.WzLib
 						objList.Add(GetObjectFromPath(spath));
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			return objList.ToArray();
+			return objList;
 		}
 
-		public IWzObject[] GetObjectsFromDirectory(WzDirectory dir)
+		public List<IWzObject> GetObjectsFromDirectory(WzDirectory dir)
 		{
 			List<IWzObject> objList = new List<IWzObject>();
 			foreach (WzImage img in dir.WzImages)
@@ -406,10 +407,10 @@ namespace MapleLib.WzLib
 				objList.Add(subdir);
 				objList.AddRange(GetObjectsFromDirectory(subdir));
 			}
-			return objList.ToArray();
+			return objList;
 		}
 
-		public IWzObject[] GetObjectsFromImage(WzImage img)
+		public List<IWzObject> GetObjectsFromImage(WzImage img)
 		{
 			List<IWzObject> objList = new List<IWzObject>();
 			foreach (IWzImageProperty prop in img.WzProperties)
@@ -417,10 +418,10 @@ namespace MapleLib.WzLib
 				objList.Add(prop);
 				objList.AddRange(GetObjectsFromProperty(prop));
 			}
-			return objList.ToArray();
+			return objList;
 		}
 
-		public IWzObject[] GetObjectsFromProperty(IWzImageProperty prop)
+		public List<IWzObject> GetObjectsFromProperty(IWzImageProperty prop)
 		{
 			List<IWzObject> objList = new List<IWzObject>();
 			switch (prop.PropertyType)
@@ -431,11 +432,8 @@ namespace MapleLib.WzLib
 					objList.Add(((WzCanvasProperty)prop).PngProperty);
 					break;
 				case WzPropertyType.Convex:
-					foreach (WzExtendedProperty exProp in ((WzConvexProperty)prop).WzProperties)
+                    foreach (IWzImageProperty exProp in ((WzConvexProperty)prop).WzProperties)
 						objList.AddRange(GetObjectsFromProperty(exProp));
-					break;
-				case WzPropertyType.Extended:
-					objList.AddRange(GetObjectsFromProperty(((WzExtendedProperty)prop).ExtendedProperty));
 					break;
 				case WzPropertyType.SubProperty:
 					foreach (IWzImageProperty subProp in ((WzSubProperty)prop).WzProperties)
@@ -446,10 +444,10 @@ namespace MapleLib.WzLib
 					objList.Add(((WzVectorProperty)prop).Y);
 					break;
 			}
-			return objList.ToArray();
+			return objList;
 		}
 
-		internal string[] GetPathsFromDirectory(WzDirectory dir, string curPath)
+		internal List<string> GetPathsFromDirectory(WzDirectory dir, string curPath)
 		{
 			List<string> objList = new List<string>();
 			foreach (WzImage img in dir.WzImages)
@@ -463,10 +461,10 @@ namespace MapleLib.WzLib
 				objList.Add(curPath + "/" + subdir.Name);
 				objList.AddRange(GetPathsFromDirectory(subdir, curPath + "/" + subdir.Name));
 			}
-			return objList.ToArray();
+			return objList;
 		}
 
-		internal string[] GetPathsFromImage(WzImage img, string curPath)
+		internal List<string> GetPathsFromImage(WzImage img, string curPath)
 		{
 			List<string> objList = new List<string>();
 			foreach (IWzImageProperty prop in img.WzProperties)
@@ -474,10 +472,10 @@ namespace MapleLib.WzLib
 				objList.Add(curPath + "/" + prop.Name);
 				objList.AddRange(GetPathsFromProperty(prop, curPath + "/" + prop.Name));
 			}
-			return objList.ToArray();
+			return objList;
 		}
 
-		internal string[] GetPathsFromProperty(IWzImageProperty prop, string curPath)
+        internal List<string> GetPathsFromProperty(IWzImageProperty prop, string curPath)
 		{
 			List<string> objList = new List<string>();
 			switch (prop.PropertyType)
@@ -491,14 +489,11 @@ namespace MapleLib.WzLib
 					objList.Add(curPath + "/PNG");
 					break;
 				case WzPropertyType.Convex:
-					foreach (WzExtendedProperty exProp in ((WzConvexProperty)prop).WzProperties)
+					foreach (IWzImageProperty exProp in ((WzConvexProperty)prop).WzProperties)
 					{
 						objList.Add(curPath + "/" + exProp.Name);
 						objList.AddRange(GetPathsFromProperty(exProp, curPath + "/" + exProp.Name));
 					}
-					break;
-				case WzPropertyType.Extended:
-					objList.AddRange(GetPathsFromProperty(((WzExtendedProperty)prop).ExtendedProperty, curPath));
 					break;
 				case WzPropertyType.SubProperty:
 					foreach (IWzImageProperty subProp in ((WzSubProperty)prop).WzProperties)
@@ -512,7 +507,7 @@ namespace MapleLib.WzLib
 					objList.Add(curPath + "/Y");
 					break;
 			}
-			return objList.ToArray();
+			return objList;
 		}
 
 		public IWzObject GetObjectFromPath(string path)
@@ -546,10 +541,6 @@ namespace MapleLib.WzLib
 							case WzPropertyType.Convex:
 								curObj = ((WzConvexProperty)curObj)[seperatedPath[i]];
 								continue;
-							case WzPropertyType.Extended:
-								curObj = ((WzExtendedProperty)curObj).ExtendedProperty;
-								i--;
-								continue;
 							case WzPropertyType.SubProperty:
 								curObj = ((WzSubProperty)curObj)[seperatedPath[i]];
 								continue;
@@ -569,9 +560,6 @@ namespace MapleLib.WzLib
 			{
 				return null;
 			}
-			if (curObj.ObjectType == WzObjectType.Property)
-				if (((IWzImageProperty)curObj).PropertyType == WzPropertyType.Extended)
-					curObj = ((WzExtendedProperty)curObj).ExtendedProperty;
 			return curObj;
 		}
 

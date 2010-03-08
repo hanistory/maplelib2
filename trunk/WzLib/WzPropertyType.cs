@@ -25,7 +25,6 @@ namespace MapleLib.WzLib
 		ByteFloat,
 		Double,
 		String,
-		Extended,
 		#endregion
 
 		#region Extended

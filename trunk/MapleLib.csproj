@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WzLib\IExtended.cs" />
     <Compile Include="MapleCryptoLib\AESEncryption.cs" />
     <Compile Include="MapleCryptoLib\CryptoConstants.cs" />
     <Compile Include="MapleCryptoLib\MapleCrypto.cs" />
@@ -88,7 +89,6 @@
     <Compile Include="WzLib\WzProperties\WzCompressedIntProperty.cs" />
     <Compile Include="WzLib\WzProperties\WzConvexProperty.cs" />
     <Compile Include="WzLib\WzProperties\WzDoubleProperty.cs" />
-    <Compile Include="WzLib\WzProperties\WzExtendedProperty.cs" />
     <Compile Include="WzLib\WzProperties\WzListEntry.cs" />
     <Compile Include="WzLib\WzProperties\WzNullProperty.cs" />
     <Compile Include="WzLib\WzProperties\WzPngProperty.cs" />

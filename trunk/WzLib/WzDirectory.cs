@@ -80,11 +80,11 @@ namespace MapleLib.WzLib
 		/// <summary>
 		/// The wz images contained in the directory
 		/// </summary>
-		public WzImage[] WzImages { get { return images.ToArray(); } }
+		public List<WzImage> WzImages { get { return images; } }
 		/// <summary>
 		/// The sub directories contained in the directory
 		/// </summary>
-		public WzDirectory[] WzDirectories { get { return subDirs.ToArray(); } }
+		public List<WzDirectory> WzDirectories { get { return subDirs; } }
 		/// <summary>
 		/// Offset of the folder
 		/// </summary>
@@ -432,7 +432,7 @@ namespace MapleLib.WzLib
 		/// Gets all child images of a WzDirectory
 		/// </summary>
 		/// <returns></returns>
-		public WzImage[] GetChildImages()
+		public List<WzImage> GetChildImages()
 		{
 			List<WzImage> imgFiles = new List<WzImage>();
 			imgFiles.AddRange(images);
@@ -440,7 +440,7 @@ namespace MapleLib.WzLib
 			{
 				imgFiles.AddRange(subDir.images);
 			}
-			return imgFiles.ToArray();
+			return imgFiles;
 		}
 		/// <summary>
 		/// Removes an image from the list with the specified name

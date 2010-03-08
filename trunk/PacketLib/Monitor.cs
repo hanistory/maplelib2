@@ -160,6 +160,8 @@ namespace MapleLib.PacketLib
 
 				byte[] dataa = new byte[received];
 				Buffer.BlockCopy(socketInfo.DataBuffer, 0, dataa, 0, received);
+                if (OnPacketReceived != null)
+                    OnPacketReceived.Invoke(new PacketReader(dataa));
 				Console.WriteLine(BitConverter.ToString(dataa));
 				Console.WriteLine(HexEncoding.ToStringFromAscii(dataa));
 				WaitForData();

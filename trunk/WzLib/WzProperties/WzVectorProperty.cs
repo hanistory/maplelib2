@@ -22,7 +22,7 @@ namespace MapleLib.WzLib.WzProperties
 	/// <summary>
 	/// A property that contains an x and a y value
 	/// </summary>
-	public class WzVectorProperty : IWzImageProperty
+	public class WzVectorProperty : IExtended
 	{
 		#region Fields
 		internal string name;
@@ -97,10 +97,6 @@ namespace MapleLib.WzLib.WzProperties
 		/// The Point of the Vector2D created from the X and Y
 		/// </summary>
 		public System.Drawing.Point Pos { get { return new System.Drawing.Point(X.Value, Y.Value); } }
-		/// <summary>
-		/// The properties contained in the property
-		/// </summary>
-		public override IWzImageProperty[] WzProperties { get { return null; } }
 		/// <summary>
 		/// Creates a blank WzVectorProperty
 		/// </summary>

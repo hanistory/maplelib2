@@ -25,7 +25,7 @@ namespace MapleLib.WzLib.WzProperties
 	/// <summary>
 	/// A property that contains data for an MP3 file
 	/// </summary>
-	public class WzSoundProperty : IWzImageProperty
+	public class WzSoundProperty : IExtended
 	{
 		#region Fields
 		internal string name;

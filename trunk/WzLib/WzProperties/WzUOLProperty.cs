@@ -18,6 +18,7 @@
 #define UOLRES
 
 using System.IO;
+using System.Collections.Generic;
 using MapleLib.WzLib.Util;
 
 namespace MapleLib.WzLib.WzProperties
@@ -25,13 +26,13 @@ namespace MapleLib.WzLib.WzProperties
 	/// <summary>
 	/// A property that's value is a string
 	/// </summary>
-	public class WzUOLProperty : IWzImageProperty
+	public class WzUOLProperty : IExtended
 	{
 		#region Fields
 		internal string name, val;
 		internal IWzObject parent;
 		internal WzImage imgParent;
-		internal IWzNonDirectoryProperty linkVal;
+		internal IWzObject linkVal;
 		#endregion
 
 		#region Inherited Members
@@ -70,14 +71,14 @@ namespace MapleLib.WzLib.WzProperties
 		/// </summary>
 		public override string Name { get { return name; } set { name = value; } }
 
-		public override IWzImageProperty[] WzProperties
+		public override List<IWzImageProperty> WzProperties
 		{
 			get
 			{
 #if UOLRES
-				return LinkValue.WzProperties;
+                return LinkValue is IWzImageProperty ? ((IWzImageProperty)LinkValue).WzProperties : null;
 #else
-                return new IWzImageProperty[0];
+                return new List<IWzImageProperty>;
 #endif
 			}
 		}
@@ -87,7 +88,7 @@ namespace MapleLib.WzLib.WzProperties
 			get
 			{
 #if UOLRES
-				return LinkValue[name];
+                return LinkValue is IWzImageProperty ? ((IWzImageProperty)LinkValue)[name] : LinkValue is WzImage ? ((WzImage)LinkValue)[name] : null;
 #else
                 return null;
 #endif
@@ -97,7 +98,7 @@ namespace MapleLib.WzLib.WzProperties
 		public override IWzImageProperty GetFromPath(string path)
 		{
 #if UOLRES
-    		return LinkValue.GetFromPath(path);
+            return LinkValue is IWzImageProperty ? ((IWzImageProperty)LinkValue).GetFromPath(path) : LinkValue is WzImage ? ((WzImage)LinkValue).GetFromPath(path) : null;
 #else
             return null;
 #endif
@@ -136,24 +137,30 @@ namespace MapleLib.WzLib.WzProperties
 		public string Value { get { return val; } set { val = value; } }
 
 #if UOLRES
-        public IWzNonDirectoryProperty LinkValue
+        public IWzObject LinkValue
 		{
 			get
 			{
 				if (linkVal == null)
 				{
 					string[] paths = val.Split('/');
-                    linkVal = (IWzNonDirectoryProperty)parent;
+                    linkVal = (IWzObject)parent;
                     string asdf = parent.FullPath;
 					foreach (string path in paths)
 					{
 						if (path == "..")
 						{
-                            linkVal = (IWzNonDirectoryProperty)linkVal.Parent;
+                            linkVal = (IWzObject)linkVal.Parent;
 						}
 						else
 						{
-							linkVal = linkVal[path];
+                            if (linkVal is IWzImageProperty)
+                                linkVal = ((IWzImageProperty)linkVal)[path];
+                            else if (linkVal is WzImage)
+                                linkVal = ((WzImage)linkVal)[path];
+                            else if (linkVal is WzDirectory)
+                                linkVal = ((WzDirectory)linkVal)[path];
+                            else throw new System.Exception("Invalid linkVal");
 						}
 					}
 				}
