@@ -33,9 +33,6 @@ namespace MapleLib.WzLib.WzProperties
 		#region Inherited Members
         public override IWzImageProperty DeepClone()
         {
-            /*WzStringProperty clone = new WzStringProperty(name, val);
-            clone.parent = parent;
-            clone.imgParent = imgParent;*/
             WzStringProperty clone = (WzStringProperty)MemberwiseClone();
             return clone;
         }

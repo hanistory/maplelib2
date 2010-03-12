@@ -284,6 +284,7 @@ namespace MapleLib.WzLib
 		/// <param name="path">Path to the output wz file</param>
 		public void SaveToDisk(string path)
 		{
+            WzIv = WzTool.GetIvByMapleVersion(mapleVersion);
 			CreateVersionHash();
 			wzDir.SetHash(versionHash);
 			string tempFile = Path.GetFileNameWithoutExtension(path) + ".TEMP";

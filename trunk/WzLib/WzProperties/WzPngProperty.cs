@@ -13,6 +13,9 @@
 
  * You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
+//uncomment the line below to create a space-time tradeoff (saving RAM by wasting more CPU cycles)
+//only works if PNGS is defined
+#define SPACETIME
 
 //uncomment to enable memory-saving by reading PNGs from hard disk
 //instead of storing them on memory
@@ -49,12 +52,6 @@ namespace MapleLib.WzLib.WzProperties
 		#region Inherited Members
         public override IWzImageProperty DeepClone()
         {
-            /*WzPngProperty clone = new WzPngProperty();
-            clone.imgParent = imgParent;
-            clone.offs = offs;
-            clone.compressedBytes = compressedBytes;
-            clone.wzReader = wzReader;
-            clone.parent = parent;*/
             WzPngProperty clone = (WzPngProperty)MemberwiseClone();
             return clone;
         }
@@ -128,6 +125,12 @@ namespace MapleLib.WzLib.WzProperties
 #if PNGS
                     wzReader.BaseStream.Position = pos;
 #endif
+#if SPACETIME
+                    Bitmap pngImage = png;
+                    png = null;
+                    compressedBytes = null;
+                    return pngImage;
+#endif
                 }
 				return png;
 			}
@@ -151,6 +154,11 @@ namespace MapleLib.WzLib.WzProperties
                     if (len > 0)
                         compressedBytes = wzReader.ReadBytes(len);
                     wzReader.BaseStream.Position = pos;
+#if SPACETIME
+                    byte[] compBytes = compressedBytes;
+                    compressedBytes = null;
+                    return compBytes;
+#endif
                 }
 #endif
                 return compressedBytes; 

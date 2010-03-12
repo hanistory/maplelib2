@@ -69,7 +69,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WzLib\IWzFile.cs" />
     <Compile Include="WzLib\IWzImageProperty.cs" />
-    <Compile Include="WzLib\IWzNonDirectoryProperty.cs" />
     <Compile Include="WzLib\IWzObject.cs" />
     <Compile Include="WzLib\Util\MP3Header.cs" />
     <Compile Include="WzLib\Util\WzBinaryReader.cs" />

@@ -45,8 +45,9 @@ namespace MapleLib.WzLib
 
         public WzImage DeepClone()
         {
+            if (reader != null && !parsed) ParseImage();
             WzImage clone = (WzImage)MemberwiseClone();
-            clone.properties.Clear();
+            clone.properties = new List<IWzImageProperty>();
             foreach (IWzImageProperty prop in properties)
                 clone.properties.Add(prop.DeepClone());
             return clone;
@@ -274,20 +275,6 @@ namespace MapleLib.WzLib
             prop.Parent = this;
             prop.ParentImage = this;
 			if (reader != null) if (!parsed) ParseImage();
-			/*switch (prop.PropertyType)
-			{
-				case WzPropertyType.SubProperty:
-				case WzPropertyType.Vector:
-				case WzPropertyType.UOL:
-				case WzPropertyType.Canvas:
-				case WzPropertyType.Convex:
-				case WzPropertyType.Sound:
-					properties.Add(new WzExtendedProperty(prop.Name) { ExtendedProperty = prop });
-					return;
-				default:
-					properties.Add(prop);
-					return;
-			}*/
             properties.Add(prop);
 		}
 		public void AddProperties(List<IWzImageProperty> props)

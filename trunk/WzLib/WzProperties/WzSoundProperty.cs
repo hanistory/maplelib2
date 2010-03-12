@@ -16,8 +16,6 @@
 
 using System.IO;
 using System;
-//using System.Collections;
-//using System.Collections.Generic;
 using MapleLib.WzLib.Util;
 
 namespace MapleLib.WzLib.WzProperties
@@ -42,9 +40,6 @@ namespace MapleLib.WzLib.WzProperties
 		#region Inherited Members
         public override IWzImageProperty DeepClone()
         {
-            /*WzSoundProperty clone = new WzSoundProperty(name);
-            clone.parent = parent;
-            clone.imgParent = imgParent;*/
             WzSoundProperty clone = (WzSoundProperty)MemberwiseClone();
             return clone;
         }

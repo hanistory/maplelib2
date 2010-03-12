@@ -35,9 +35,6 @@ namespace MapleLib.WzLib.WzProperties
 		#region Inherited Members
         public override IWzImageProperty DeepClone()
         {
-            /*WzByteFloatProperty clone = new WzByteFloatProperty(name, val);
-            clone.parent = parent;
-            clone.imgParent = imgParent;*/
             WzByteFloatProperty clone = (WzByteFloatProperty)MemberwiseClone();
             return clone;
         }

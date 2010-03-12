@@ -69,7 +69,8 @@ namespace MapleLib.WzLib
 		}
 		#endregion
 
-		/// <summary>
+        #region Custom Members
+        /// <summary>
 		/// The size of the directory in the wz file
 		/// </summary>
 		public int BlockSize { get { return size; } set { size = value; } }
@@ -461,6 +462,19 @@ namespace MapleLib.WzLib
 			for (int i = 0; i < subDirs.Count; i++)
 				if (subDirs[i].Name.ToLower() == name.ToLower())
 					subDirs.RemoveAt(i);
-		}
-	}
+        }
+
+        public WzDirectory DeepClone()
+        {
+            WzDirectory result = (WzDirectory)MemberwiseClone();
+            result.WzDirectories.Clear();
+            result.WzImages.Clear();
+            foreach (WzDirectory dir in WzDirectories)
+                result.WzDirectories.Add(dir.DeepClone());
+            foreach (WzImage img in WzImages)
+                result.WzImages.Add(img.DeepClone());
+            return result;
+        }
+        #endregion
+    }
 }

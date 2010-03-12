@@ -70,17 +70,6 @@ namespace MapleLib.WzLib
             this.version = version;
             this.WzIv = WzTool.GetIvByMapleVersion(version);
 		}
-		/*/// <summary>
-		/// Open a wz list file from an array of bytes in the memory
-		/// </summary>
-		/// <param name="fileBytes">The wz file in the memory</param>
-		public WzListFile(string name, byte[] fileBytes, WzMapleVersion version)
-		{
-            this.name = name;
-			wzFileBytes = fileBytes;
-            this.version = version;
-            this.WzIv = WzTool.GetIvByMapleVersion(version);
-		}*/
 
 		/// <summary>
 		/// Parses the wz list file
