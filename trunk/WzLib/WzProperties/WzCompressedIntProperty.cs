@@ -33,6 +33,11 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override void SetValue(object value)
+        {
+            val = System.Convert.ToInt32(value);
+        }
+
         public override IWzImageProperty DeepClone()
         {
             WzCompressedIntProperty clone = (WzCompressedIntProperty)MemberwiseClone();

@@ -50,6 +50,13 @@ namespace MapleLib.WzLib
 
         public abstract IWzImageProperty DeepClone();
 
+        public abstract void SetValue(object value);
+
+        public virtual void Remove()
+        {
+            ((IPropertyContainer)Parent).RemoveProperty(this);
+        }
+
 		public virtual void ExportXml(StreamWriter writer, int level)
 		{
 			writer.WriteLine(XmlUtil.Indentation(level) + XmlUtil.OpenNamedTag(this.PropertyType.ToString(), this.Name, true));

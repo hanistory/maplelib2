@@ -115,12 +115,11 @@ namespace MapleLib.WzLib.Util
 		{
 			switch (ver)
 			{
-				case WzMapleVersion.BMS:
-					return CryptoConstants.WZ_MSEAIV;//?
 				case WzMapleVersion.EMS:
 					return CryptoConstants.WZ_MSEAIV;//?
 				case WzMapleVersion.GMS:
 					return CryptoConstants.WZ_GMSIV;
+                case WzMapleVersion.BMS:
 				case WzMapleVersion.CLASSIC:
 				default:
 					return new byte[4];

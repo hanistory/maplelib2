@@ -50,6 +50,12 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override void SetValue(object value)
+        {
+            if (value is Bitmap) PNG = (Bitmap)value;
+            else compressedBytes = (byte[])value;
+        }
+
         public override IWzImageProperty DeepClone()
         {
             WzPngProperty clone = (WzPngProperty)MemberwiseClone();

@@ -38,6 +38,12 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override void SetValue(object value)
+        {
+            if (value is byte[]) SetDataUnsafe((byte[])value);
+            else SetDataUnsafe(CreateCustomProperty("foo", (string)value).SoundData);
+        }
+
         public override IWzImageProperty DeepClone()
         {
             WzSoundProperty clone = (WzSoundProperty)MemberwiseClone();

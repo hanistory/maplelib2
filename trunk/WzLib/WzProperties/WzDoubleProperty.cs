@@ -32,6 +32,11 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override void SetValue(object value)
+        {
+            val = (double)value;
+        }
+
         public override IWzImageProperty DeepClone()
         {
             WzDoubleProperty clone = (WzDoubleProperty)MemberwiseClone();

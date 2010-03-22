@@ -32,6 +32,11 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override void SetValue(object value)
+        {
+            val = (ushort)value;
+        }
+
         public override IWzImageProperty DeepClone()
         {
             WzUnsignedShortProperty clone = (WzUnsignedShortProperty)MemberwiseClone();

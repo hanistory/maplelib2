@@ -23,18 +23,47 @@ namespace MapleLib.WzLib
 {
 	public class WzHeader
 	{
-		public string Ident { get; set; }
-		public string Copyright { get; set; }
-		public ulong FSize { get; set; }
-		public uint FStart { get; set; }
+        private string ident;
+        private string copyright;
+        private ulong fsize;
+        private uint fstart;
+
+        public string Ident
+        {
+            get { return ident; }
+            set { ident = value; }
+        }
+
+        public string Copyright
+        {
+            get { return copyright; }
+            set { copyright = value; }
+        }
+
+        public ulong FSize
+        {
+            get { return fsize; }
+            set { fsize = value; }
+        }
+
+		public uint FStart 
+        {
+            get { return fstart; }
+            set { fstart = value; }
+        }
+
+        public void RecalculateFileStart()
+        {
+            fstart = (uint)(ident.Length + sizeof(ulong) + sizeof(uint) + copyright.Length + 1);
+        }
 
 		public static WzHeader GetDefault()
 		{
 			WzHeader header = new WzHeader();
-			header.Ident = "PKG1";
-			header.Copyright = "Package file v1.0 Copyright 2002 Wizet, ZMS";
-			header.FStart = 60;
-			header.FSize = 0;
+			header.ident = "PKG1";
+			header.copyright = "Package file v1.0 Copyright 2002 Wizet, ZMS";
+			header.fstart = 60;
+			header.fsize = 0;
 			return header;
 		}
 	}

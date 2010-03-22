@@ -33,6 +33,11 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override void SetValue(object value)
+        {
+            val = (float)value;
+        }
+
         public override IWzImageProperty DeepClone()
         {
             WzByteFloatProperty clone = (WzByteFloatProperty)MemberwiseClone();

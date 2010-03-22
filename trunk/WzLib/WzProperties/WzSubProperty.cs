@@ -33,6 +33,11 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override void SetValue(object value)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public override IWzImageProperty DeepClone()
         {
             WzSubProperty clone = (WzSubProperty)MemberwiseClone();
@@ -172,9 +177,9 @@ namespace MapleLib.WzLib.WzProperties
 				AddProperty(prop);
 			}
 		}
-		public void RemoveProperty(string name)
+        public void RemoveProperty(IWzImageProperty prop)
 		{
-            properties.Remove(this[name]);
+            properties.Remove(prop);
 		}
 		/// <summary>
 		/// Clears the list of properties

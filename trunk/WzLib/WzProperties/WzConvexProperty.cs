@@ -34,6 +34,11 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override void SetValue(object value)
+        {
+            throw new NotImplementedException();
+        }
+
         public override IWzImageProperty DeepClone()
         {
             WzConvexProperty clone = (WzConvexProperty)MemberwiseClone();
@@ -59,9 +64,9 @@ namespace MapleLib.WzLib.WzProperties
                 AddProperty(prop);
             }
         }
-        public void RemoveProperty(string name)
+        public void RemoveProperty(IWzImageProperty prop)
         {
-            properties.Remove((IExtended)this[name]);
+            properties.Remove((IExtended)prop);
         }
 
 		/// <summary>

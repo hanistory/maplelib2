@@ -34,6 +34,11 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override void SetValue(object value)
+        {
+            imageProp.SetValue(value);
+        }
+
         public override IWzImageProperty DeepClone()
         {
             WzCanvasProperty clone = (WzCanvasProperty)MemberwiseClone();
@@ -218,9 +223,9 @@ namespace MapleLib.WzLib.WzProperties
 		/// Remove a property
 		/// </summary>
 		/// <param name="name">Name of Property</param>
-		public void RemoveProperty(string name)
+        public void RemoveProperty(IWzImageProperty prop)
 		{
-			properties.Remove(GetProperty(name));
+			properties.Remove(prop);
 		}
 
 		/// <summary>

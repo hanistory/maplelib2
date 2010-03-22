@@ -31,7 +31,7 @@ namespace MapleLib.WzLib
 		#region Fields
 		internal string path;
 		internal WzDirectory wzDir;
-		internal WzHeader Header;
+		internal WzHeader header;
 		internal string name = "";
 		internal short version = 0;
 		internal uint versionHash = 0;
@@ -74,6 +74,8 @@ namespace MapleLib.WzLib
 		{
 			get { return WzDirectory[name]; }
 		}
+
+        public WzHeader Header { get { return header; } set { header = value; } }
 
         public short Version { get { return fileVersion; } set { fileVersion = value; } }
 

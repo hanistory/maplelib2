@@ -32,6 +32,20 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
+        public override void SetValue(object value)
+        {
+            if (value is System.Drawing.Point)
+            {
+                x.val = ((System.Drawing.Point)value).X;
+                y.val = ((System.Drawing.Point)value).Y;
+            }
+            else
+            {
+                x.val = ((System.Drawing.Size)value).Width;
+                y.val = ((System.Drawing.Size)value).Height;
+            }
+        }
+
         public override IWzImageProperty DeepClone()
         {
             WzVectorProperty clone = (WzVectorProperty)MemberwiseClone();

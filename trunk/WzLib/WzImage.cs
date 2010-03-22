@@ -64,7 +64,7 @@ namespace MapleLib.WzLib
 		/// <summary>
 		/// Is the object parsed
 		/// </summary>
-		public bool Parsed { get { return parsed; } }
+        public bool Parsed { get { return parsed; } set { parsed = value; } }
         /// <summary>
         /// Was the image changed
         /// </summary>
@@ -288,12 +288,10 @@ namespace MapleLib.WzLib
 		/// Removes a property by name
 		/// </summary>
 		/// <param name="name">The name of the property to remove</param>
-		public void RemoveProperty(string name)
+        public void RemoveProperty(IWzImageProperty prop)
 		{
 			if (reader != null) if (!parsed) ParseImage();
-			for (int i = 0; i < properties.Count; i++)
-				if (properties[i].Name.ToLower() == name.ToLower())
-					properties.RemoveAt(i);
+            properties.Remove(prop);
 		}
 		public void ClearProperties()
 		{

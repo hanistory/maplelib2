@@ -25,7 +25,7 @@ namespace MapleLib.WzLib
 	{
 		void AddProperty(IWzImageProperty prop);
 		void AddProperties(List<IWzImageProperty> props);
-		void RemoveProperty(string name);
+		void RemoveProperty(IWzImageProperty prop);
 		void ClearProperties();
 	}
 }
