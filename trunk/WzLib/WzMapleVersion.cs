@@ -27,6 +27,7 @@ namespace MapleLib.WzLib
 		EMS,
 		BMS,
 		CLASSIC,
-		GENERATE
+		GENERATE,
+        GETFROMZLZ
 	}
 }

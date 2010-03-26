@@ -117,7 +117,13 @@ namespace MapleLib.WzLib
 			path = filePath;
 			fileVersion = -1;
 			mapleVersion = version;
-			WzIv = WzTool.GetIvByMapleVersion(version);
+            if (version == WzMapleVersion.GETFROMZLZ)
+            {
+                FileStream zlzStream = File.OpenRead(Path.Combine(Path.GetDirectoryName(filePath), "ZLZ.dll"));
+                WzIv = Util.WzKeyGenerator.GetIvFromZlz(zlzStream);
+                zlzStream.Close();
+            }
+			else WzIv = WzTool.GetIvByMapleVersion(version);
 		}
 
 		/// <summary>
@@ -130,7 +136,13 @@ namespace MapleLib.WzLib
 			path = filePath;
 			fileVersion = gameVersion;
 			mapleVersion = version;
-			WzIv = WzTool.GetIvByMapleVersion(version);
+            if (version == WzMapleVersion.GETFROMZLZ)
+            {
+                FileStream zlzStream = File.OpenRead(Path.Combine(Path.GetDirectoryName(filePath), "ZLZ.dll"));
+                WzIv = Util.WzKeyGenerator.GetIvFromZlz(zlzStream);
+                zlzStream.Close();
+            }
+            else WzIv = WzTool.GetIvByMapleVersion(version);
 		}
 
 		/// <summary>

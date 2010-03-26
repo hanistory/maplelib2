@@ -37,7 +37,7 @@ namespace MapleLib.WzLib.Util
 			return wzKey;
 		}
 
-		private static byte[] GetIvFromZlz(FileStream zlzStream)
+		public static byte[] GetIvFromZlz(FileStream zlzStream)
 		{
 			byte[] iv = new byte[4];
 
