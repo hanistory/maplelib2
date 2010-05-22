@@ -31,8 +31,6 @@ namespace MapleLib.WzLib
         #region Virtual\Abstrcat Members
         public virtual List<IWzImageProperty> WzProperties { get { return null; } }
 
-        public virtual object WzValue { get { return null; } }
-
         public virtual IWzImageProperty this[string name] { get { return null; } }
 
         public virtual IWzImageProperty GetFromPath(string path)
@@ -52,7 +50,7 @@ namespace MapleLib.WzLib
 
         public abstract void SetValue(object value);
 
-        public virtual void Remove()
+        public override void Remove()
         {
             ((IPropertyContainer)Parent).RemoveProperty(this);
         }
@@ -64,6 +62,7 @@ namespace MapleLib.WzLib
         }
         #endregion
 
+        #region Extended Properties Parsing
         internal static void WritePropertyList(WzBinaryWriter writer, List<IWzImageProperty> properties)
 		{
 			writer.Write((ushort)0);
@@ -210,107 +209,7 @@ namespace MapleLib.WzLib
             writer.Write(len - 4);
             writer.BaseStream.Position = newPos;
         }
+        #endregion
 
-		#region Cast Values
-
-		public float ToFloat()
-		{
-			return ToFloat(0);
-		}
-		public WzPngProperty ToPngProperty()
-		{
-			return ToPngProperty(null);
-		}
-		public int ToInt()
-		{
-			return ToInt(0);
-		}
-		public double ToDouble()
-		{
-			return ToDouble(0);
-		}
-		public Bitmap ToBitmap()
-		{
-			return ToBitmap(null);
-		}
-		public byte[] ToSoundBytes()
-		{
-			return ToSoundBytes(null);
-		}
-		public string ToStringValue()
-		{
-			return ToStringValue(null);
-		}
-		public ushort ToUnsignedShort()
-		{
-			return ToUnsignedShort(0);
-		}
-		public IWzImageProperty ToUOLLink()
-		{
-			return ToUOLLink(null);
-		}
-		public Point ToVector()
-		{
-			return ToVector(Point.Empty);
-		}
-
-		public float ToFloat(float def)
-		{
-			if (this is WzByteFloatProperty) return (float)WzValue;
-			else return def;
-		}
-		public WzPngProperty ToPngProperty(WzPngProperty def)
-		{
-			if (this is WzCanvasProperty) return (WzPngProperty)WzValue;
-			else if (this is WzUOLProperty) return ToUOLLink().ToPngProperty(def);
-			else return def;
-		}
-		public int ToInt(int def)
-		{
-			if (this is WzCompressedIntProperty) return (int)WzValue;
-			else if (this is WzStringProperty) return Int32.Parse((string)WzValue);
-			else return def;
-		}
-		public double ToDouble(double def)
-		{
-			if (this is WzDoubleProperty) return (double)WzValue;
-			else if (this is WzStringProperty) return Double.Parse((string)WzValue);
-			else return def;
-		}
-		public Bitmap ToBitmap(Bitmap def)
-		{
-			if (this is WzPngProperty) return (Bitmap)WzValue;
-			else if (this is WzCanvasProperty) return (Bitmap)((WzCanvasProperty)this).PngProperty.WzValue;
-			else if (this is WzUOLProperty) return ToUOLLink().ToBitmap(def);
-			else return def;
-		}
-		public byte[] ToSoundBytes(byte[] def)
-		{
-			if (this is WzSoundProperty) return (byte[])WzValue;
-			else return def;
-		}
-		public string ToStringValue(string def)
-		{
-			if (this is WzStringProperty) return (string)WzValue;
-			else return def;
-		}
-		public ushort ToUnsignedShort(ushort def)
-		{
-			if (this is WzUnsignedShortProperty) return (ushort)WzValue;
-			else if (this is WzStringProperty) return UInt16.Parse((string)WzValue);
-			else return def;
-		}
-		public IWzImageProperty ToUOLLink(IWzImageProperty def)
-		{
-			if (this is WzUOLProperty) return (IWzImageProperty)WzValue;
-			else return def;
-		}
-		public Point ToVector(Point def)
-		{
-			if (this is WzVectorProperty) return (Point)WzValue;
-			else return def;
-		}
-
-		#endregion
 	}
 }

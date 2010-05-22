@@ -27,13 +27,12 @@ namespace MapleLib.WzLib.WzProperties
 	{
 		#region Fields
 		internal string name;
-		internal byte[] mp3bytes;
+		internal byte[] mp3bytes = null;
 		internal IWzObject parent;
         internal int len_ms;
 		internal WzImage imgParent;
         internal WzBinaryReader wzReader;
         internal long offs;
-        internal bool parsed = false;
         public static readonly byte[] soundHeaderMask = new byte[] { 0x02, 0x83, 0xEB, 0x36, 0xE4, 0x4F, 0x52, 0xCE, 0x11, 0x9F, 0x53, 0x00, 0x20, 0xAF, 0x0B, 0xA7, 0x70, 0x8B, 0xEB, 0x36, 0xE4, 0x4F, 0x52, 0xCE, 0x11, 0x9F, 0x53, 0x00, 0x20, 0xAF, 0x0B, 0xA7, 0x70, 0x00, 0x01, 0x81, 0x9F, 0x58, 0x05, 0x56, 0xC3, 0xCE, 0x11, 0xBF, 0x01, 0x00, 0xAA, 0x00, 0x55, 0x59, 0x5A, 0x1E, 0x55, 0x00, 0x02, 0x00,/*FRQ 56*/0xAA, 0xBB, 0xCC, 0xDD/*/FRQ 59*/, 0x10, 0x27, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x0A, 0x02, 0x01, 0x00, 0x00, 0x00 };
 		#endregion
 
@@ -41,7 +40,7 @@ namespace MapleLib.WzLib.WzProperties
         public override void SetValue(object value)
         {
             if (value is byte[]) SetDataUnsafe((byte[])value);
-            else SetDataUnsafe(CreateCustomProperty("foo", (string)value).SoundData);
+            else SetDataUnsafe(CreateCustomProperty("foo", (string)value).GetBytes(false));
         }
 
         public override IWzImageProperty DeepClone()
@@ -50,7 +49,7 @@ namespace MapleLib.WzLib.WzProperties
             return clone;
         }
 
-		public override object WzValue { get { return SoundData; } }
+		public override object WzValue { get { return GetBytes(false); } }
 		/// <summary>
 		/// The parent of the object
 		/// </summary>
@@ -69,11 +68,12 @@ namespace MapleLib.WzLib.WzProperties
 		public override WzPropertyType PropertyType { get { return WzPropertyType.Sound; } }
 		public override void WriteValue(WzBinaryWriter writer)
 		{
+            byte[] data = GetBytes(false);
 			writer.WriteStringValue("Sound_DX8", 0x73, 0x1B);
 			writer.Write((byte)0);
-			writer.WriteCompressedInt(SoundData.Length);
+			writer.WriteCompressedInt(data.Length);
 			writer.WriteCompressedInt(0);
-			writer.Write(SoundData);
+			writer.Write(data);
 		}
 		public override void ExportXml(StreamWriter writer, int level)
 		{
@@ -93,7 +93,8 @@ namespace MapleLib.WzLib.WzProperties
 		/// <summary>
 		/// The data of the mp3 file
 		/// </summary>
-		public byte[] SoundData { get { if (!parsed) ParseSoundData(); return mp3bytes; } }
+        [Obsolete("To enable more control over memory usage, this property was superseded by the GetBytes method and will be removed in the future")]
+		public byte[] SoundData { get { return GetBytes(false); } }
         /// <summary>
         /// Length of the mp3 file in milliseconds
         /// </summary>
@@ -122,13 +123,11 @@ namespace MapleLib.WzLib.WzProperties
         public void SetDataUnsafe(byte[] data)
         {
             this.mp3bytes = data;
-            parsed = true;
         }
 
         public static WzSoundProperty CreateCustomProperty(string name, string file)
         {
             WzSoundProperty newProp = new WzSoundProperty(name);
-            newProp.parsed = true;
             MP3Header header = new MP3Header();
             header.ReadMP3Information(file);
             newProp.len_ms = header.intLength * 1000;
@@ -153,32 +152,42 @@ namespace MapleLib.WzLib.WzProperties
             wzReader = reader;
 		}
 
-        internal void ParseSoundData()
+        public byte[] GetBytes(bool saveInMemory)
         {
-            long currentPos = wzReader.BaseStream.Position;
-            wzReader.BaseStream.Position = offs;
-            int soundDataLen = wzReader.ReadCompressedInt();
-            wzReader.ReadCompressedInt();
-            mp3bytes = wzReader.ReadBytes(soundDataLen);
-            wzReader.BaseStream.Position = currentPos;
-        }
-
-        public void SaveToFile(string file)
-        {
-            if (wzReader == null)
-                File.WriteAllBytes(file, mp3bytes);
+            if (mp3bytes != null)
+                return mp3bytes;
             else
             {
+                if (wzReader == null) return null;
                 long currentPos = wzReader.BaseStream.Position;
                 wzReader.BaseStream.Position = offs;
                 int soundDataLen = wzReader.ReadCompressedInt();
                 wzReader.ReadCompressedInt();
-                byte[] data = wzReader.ReadBytes(soundDataLen);
+                //wzReader.BaseStream.Position += 82;
+                mp3bytes = wzReader.ReadBytes(soundDataLen);
                 wzReader.BaseStream.Position = currentPos;
-                File.WriteAllBytes(file, data);
+                if (saveInMemory)
+                    return mp3bytes;
+                else
+                {
+                    byte[] result = mp3bytes;
+                    mp3bytes = null;
+                    return result;
+                }
             }
         }
 
+        public void SaveToFile(string file)
+        {
+            File.WriteAllBytes(file, GetBytes(false));
+        }
 		#endregion
+
+        #region Cast Values
+        internal override byte[] ToBytes(byte[] def)
+        {
+            return GetBytes(false);
+        }
+        #endregion
 	}
 }

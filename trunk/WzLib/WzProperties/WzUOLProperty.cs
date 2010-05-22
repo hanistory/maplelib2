@@ -197,5 +197,52 @@ namespace MapleLib.WzLib.WzProperties
 			this.val = value;
 		}
 		#endregion
-	}
+
+        #region Cast Values
+        internal override System.Drawing.Bitmap ToBitmap(System.Drawing.Bitmap def)
+        {
+            return LinkValue.ToBitmap(def);
+        }
+
+        internal override byte[] ToBytes(byte[] def)
+        {
+            return LinkValue.ToBytes(def);
+        }
+
+        internal override double ToDouble(double def)
+        {
+            return LinkValue.ToDouble(def);
+        }
+
+        internal override float ToFloat(float def)
+        {
+            return LinkValue.ToFloat(def);
+        }
+
+        internal override int ToInt(int def)
+        {
+            return LinkValue.ToInt(def);
+        }
+
+        internal override WzPngProperty ToPngProperty(WzPngProperty def)
+        {
+            return LinkValue.ToPngProperty(def);
+        }
+
+        internal override System.Drawing.Point ToPoint(System.Drawing.Point def)
+        {
+            return LinkValue.ToPoint(def);
+        }
+
+        public override string ToString()
+        {
+            return LinkValue.ToString();
+        }
+
+        internal override ushort ToUnsignedShort(ushort def)
+        {
+            return LinkValue.ToUnsignedShort(def);
+        }
+        #endregion
+    }
 }

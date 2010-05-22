@@ -49,7 +49,7 @@ namespace MapleLib.WzLib
 		public override WzObjectType ObjectType { get { return WzObjectType.File; } }
 		public override IWzObject Parent { get { return null; } internal set { } }
         public override string FilePath { get { return filePath; } }
-        public WzMapleVersion MapleVersion { get { return version; } set { version = value; } }
+        public override WzMapleVersion MapleVersion { get { return version; } set { version = value; } }
 		public override void Dispose()
 		{
 			wzFileBytes = null;
@@ -70,6 +70,13 @@ namespace MapleLib.WzLib
             this.version = version;
             this.WzIv = WzTool.GetIvByMapleVersion(version);
 		}
+
+        public WzListFile(WzMapleVersion version, string name)
+        {
+            this.name = name;
+            this.version = version;
+            this.WzIv = WzTool.GetIvByMapleVersion(version);
+        }
 
 		/// <summary>
 		/// Parses the wz list file
@@ -99,12 +106,17 @@ namespace MapleLib.WzLib
             string currEntry;
             for (int i = 0; i < listEntries.Count; i++)
             {
-                currEntry = listEntries[i].Value;
+                currEntry = listEntries[i].Name;
                 if (i == listEntries.Count - 1)
                     currEntry = currEntry.Substring(0, currEntry.Length - 1) + "/";
                 wzWriter.Write(currEntry.Length);
                 //wzWriter.Write(
             }
 		}
+
+        public override void Remove()
+        {
+            Dispose();
+        }
     }
 }

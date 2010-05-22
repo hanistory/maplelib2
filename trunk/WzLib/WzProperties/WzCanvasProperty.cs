@@ -156,9 +156,10 @@ namespace MapleLib.WzLib.WzProperties
 			writer.WriteCompressedInt(PngProperty.format);
 			writer.Write((byte)PngProperty.format2);
 			writer.Write(0);
-			writer.Write(PngProperty.CompressedBytes.Length + 1);
+            byte[] bytes = PngProperty.GetCompressedBytes(false);
+            writer.Write(bytes.Length + 1);
 			writer.Write((byte)0);
-			writer.Write(PngProperty.CompressedBytes);
+            writer.Write(bytes);
 		}
 		public override void ExportXml(StreamWriter writer, int level)
 		{
@@ -236,5 +237,17 @@ namespace MapleLib.WzLib.WzProperties
 			properties.Clear();
 		}
 		#endregion
+
+        #region Cast Values
+        internal override WzPngProperty ToPngProperty(WzPngProperty def)
+        {
+            return imageProp;
+        }
+
+        internal override System.Drawing.Bitmap ToBitmap(System.Drawing.Bitmap def)
+        {
+            return imageProp.GetPNG(false);
+        }
+        #endregion
 	}
 }

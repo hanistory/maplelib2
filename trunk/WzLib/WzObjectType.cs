@@ -26,6 +26,7 @@ namespace MapleLib.WzLib
 		File,
 		Image,
 		Directory,
-		Property
+		Property,
+        List
 	}
 }

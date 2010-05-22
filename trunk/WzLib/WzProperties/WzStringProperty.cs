@@ -106,5 +106,32 @@ namespace MapleLib.WzLib.WzProperties
 			this.val = value;
 		}
 		#endregion
+
+        #region Cast Values
+        internal override float ToFloat(float def)
+        {
+            return float.Parse(val);
+        }
+
+        internal override double ToDouble(double def)
+        {
+            return double.Parse(val);
+        }
+
+        internal override int ToInt(int def)
+        {
+            return int.Parse(val);
+        }
+
+        internal override ushort ToUnsignedShort(ushort def)
+        {
+            return ushort.Parse(val);
+        }
+
+        public override string ToString()
+        {
+            return val;
+        }
+        #endregion
 	}
 }

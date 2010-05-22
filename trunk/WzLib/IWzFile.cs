@@ -22,5 +22,6 @@ namespace MapleLib.WzLib
     public abstract class IWzFile : IWzObject
     {
         public abstract string FilePath { get; }
+        public abstract WzMapleVersion MapleVersion { get; set; }
     }
 }

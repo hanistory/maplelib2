@@ -297,5 +297,10 @@ namespace MapleLib.WzLib
 		{
 			properties.Clear();
 		}
+
+        public override void Remove()
+        {
+            ((WzDirectory)Parent).RemoveImage(this);
+        }
 	}
 }

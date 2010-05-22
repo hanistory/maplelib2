@@ -81,7 +81,7 @@ namespace MapleLib.WzLib
 
         public override string FilePath { get { return path; } }
 
-        public WzMapleVersion MapleVersion { get { return mapleVersion; } set { mapleVersion = value; } }
+        public override WzMapleVersion MapleVersion { get { return mapleVersion; } set { mapleVersion = value; } }
 
 		public override IWzObject Parent { get { return null; } internal set { } }
 
@@ -528,8 +528,8 @@ namespace MapleLib.WzLib
 		public IWzObject GetObjectFromPath(string path)
 		{
 			string[] seperatedPath = path.Split("/".ToCharArray());
-			if (seperatedPath[0].ToLower() != wzDir.name.ToLower())
-				return null;
+            if (seperatedPath[0].ToLower() != wzDir.name.ToLower() && seperatedPath[0].ToLower() != wzDir.name.Substring(0, wzDir.name.Length - 3).ToLower())
+                return null;
 			if (seperatedPath.Length == 1)
 				return WzDirectory;
 			IWzObject curObj = WzDirectory;
@@ -594,5 +594,10 @@ namespace MapleLib.WzLib
 				return strMatch(strWildCard.Substring(1), strCompare.Substring(1));
 			return false;
 		}
+
+        public override void Remove()
+        {
+            Dispose();
+        }
 	}
 }

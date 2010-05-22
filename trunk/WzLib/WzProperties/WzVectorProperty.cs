@@ -133,5 +133,17 @@ namespace MapleLib.WzLib.WzProperties
 			this.y = y;
 		}
 		#endregion
+
+        #region Cast Values
+        internal override System.Drawing.Point ToPoint(System.Drawing.Point def)
+        {
+            return new System.Drawing.Point(x.val, y.val);
+        }
+
+        public override string ToString()
+        {
+            return "X: " + x.val.ToString() + ", Y: " + y.val.ToString();
+        }
+        #endregion
 	}
 }

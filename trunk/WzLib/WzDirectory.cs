@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using MapleLib.WzLib.Util;
@@ -444,24 +443,20 @@ namespace MapleLib.WzLib
 			return imgFiles;
 		}
 		/// <summary>
-		/// Removes an image from the list with the specified name
+		/// Removes an image from the list
 		/// </summary>
-		/// <param name="name">The name of the image to remove</param>
-		public void RemoveImage(string name)
+		/// <param name="image">The image to remove</param>
+		public void RemoveImage(WzImage image)
 		{
-			for (int i = 0; i < images.Count; i++)
-				if (images[i].Name.ToLower() == name.ToLower())
-					images.RemoveAt(i);
+            images.Remove(image);
 		}
 		/// <summary>
-		/// Removes a sub directory from the list with the specified name
+		/// Removes a sub directory from the list
 		/// </summary>
-		/// <param name="name">The name of the sub directory to remove</param>
-		public void RemoveDirectory(string name)
+		/// <param name="name">The sub directory to remove</param>
+		public void RemoveDirectory(WzDirectory dir)
 		{
-			for (int i = 0; i < subDirs.Count; i++)
-				if (subDirs[i].Name.ToLower() == name.ToLower())
-					subDirs.RemoveAt(i);
+            subDirs.Remove(dir);
         }
 
         public WzDirectory DeepClone()
@@ -476,5 +471,10 @@ namespace MapleLib.WzLib
             return result;
         }
         #endregion
+
+        public override void Remove()
+        {
+            ((WzDirectory)Parent).RemoveDirectory(this);
+        }
     }
 }
