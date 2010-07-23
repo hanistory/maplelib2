@@ -27,7 +27,7 @@ namespace MapleLib.WzLib.WzProperties
 		#region Fields
 		internal string name;
 		internal IWzObject parent;
-		internal WzImage imgParent;
+		//internal WzImage imgParent;
 		#endregion
 
 		#region Inherited Members
@@ -46,10 +46,10 @@ namespace MapleLib.WzLib.WzProperties
 		/// The parent of the object
 		/// </summary>
 		public override IWzObject Parent { get { return parent; } internal set { parent = value; } }
-		/// <summary>
+		/*/// <summary>
 		/// The image that this property is contained in
 		/// </summary>
-		public override WzImage ParentImage { get { return imgParent; } internal set { imgParent = value; } }
+		public override WzImage ParentImage { get { return imgParent; } internal set { imgParent = value; } }*/
 		/// <summary>
 		/// The WzPropertyType of the property
 		/// </summary>

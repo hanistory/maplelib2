@@ -30,7 +30,7 @@ namespace MapleLib.WzLib.WzProperties
 		internal byte[] mp3bytes = null;
 		internal IWzObject parent;
         internal int len_ms;
-		internal WzImage imgParent;
+		//internal WzImage imgParent;
         internal WzBinaryReader wzReader;
         internal long offs;
         public static readonly byte[] soundHeaderMask = new byte[] { 0x02, 0x83, 0xEB, 0x36, 0xE4, 0x4F, 0x52, 0xCE, 0x11, 0x9F, 0x53, 0x00, 0x20, 0xAF, 0x0B, 0xA7, 0x70, 0x8B, 0xEB, 0x36, 0xE4, 0x4F, 0x52, 0xCE, 0x11, 0x9F, 0x53, 0x00, 0x20, 0xAF, 0x0B, 0xA7, 0x70, 0x00, 0x01, 0x81, 0x9F, 0x58, 0x05, 0x56, 0xC3, 0xCE, 0x11, 0xBF, 0x01, 0x00, 0xAA, 0x00, 0x55, 0x59, 0x5A, 0x1E, 0x55, 0x00, 0x02, 0x00,/*FRQ 56*/0xAA, 0xBB, 0xCC, 0xDD/*/FRQ 59*/, 0x10, 0x27, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x0A, 0x02, 0x01, 0x00, 0x00, 0x00 };
@@ -54,10 +54,10 @@ namespace MapleLib.WzLib.WzProperties
 		/// The parent of the object
 		/// </summary>
 		public override IWzObject Parent { get { return parent; } internal set { parent = value; } }
-		/// <summary>
+		/*/// <summary>
 		/// The image that this property is contained in
 		/// </summary>
-		public override WzImage ParentImage { get { return imgParent; } internal set { imgParent = value; } }
+		public override WzImage ParentImage { get { return imgParent; } internal set { imgParent = value; } }*/
 		/// <summary>
 		/// The name of the property
 		/// </summary>
@@ -141,13 +141,14 @@ namespace MapleLib.WzLib.WzProperties
         #endregion
 
         #region Parsing Methods
-        internal void ParseSound(WzBinaryReader reader)
+        internal void ParseSound(WzBinaryReader reader, bool parseNow)
 		{
 			reader.BaseStream.Position++;
             offs = reader.BaseStream.Position;
 			int soundDataLen = reader.ReadCompressedInt();
 			len_ms = reader.ReadCompressedInt();
-			//mp3bytes = reader.ReadBytes(soundDataLen);
+            if (parseNow)
+			    mp3bytes = reader.ReadBytes(soundDataLen);
             reader.BaseStream.Position += soundDataLen;
             wzReader = reader;
 		}

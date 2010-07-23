@@ -296,7 +296,7 @@ namespace MapleLib.WzLib
 		/// Saves a wz file to the disk, AKA repacking.
 		/// </summary>
 		/// <param name="path">Path to the output wz file</param>
-		public void SaveToDisk(string path)
+		public override void SaveToDisk(string path)
 		{
             WzIv = WzTool.GetIvByMapleVersion(mapleVersion);
 			CreateVersionHash();

@@ -58,6 +58,16 @@ namespace MapleLib.WzLib
 			listEntries = null;
 		}
 
+        
+        public WzListEntry this[string name]
+        {
+            get
+            {
+                foreach (WzListEntry entry in listEntries) if (entry.Name == name) return entry;
+                return null;
+            }
+        }
+
 		/// <summary>
 		/// Open a wz list file from a file on the disk
 		/// </summary>
@@ -88,9 +98,11 @@ namespace MapleLib.WzLib
 			{
 				int Len = wzParser.ReadInt32();
 				char[] List = new char[Len];
-				for (int i = 0; i < Len; i++)
-					List[i] = (char)wzParser.ReadInt16();
-				wzParser.ReadUInt16();
+                for (int i = 0; i < Len; i++)
+                {
+                    List[i] = (char)wzParser.ReadInt16();
+                }
+				wzParser.ReadUInt16(); //encrypted null
 				string Decrypted = wzParser.DecryptString(List);
 				if (wzParser.PeekChar() == -1)
 					if (Decrypted[Decrypted.Length - 1] == '/')
@@ -100,19 +112,26 @@ namespace MapleLib.WzLib
 			wzParser.Close();
 		}
 
-		public void SaveToDisk(string path)
+		public override void SaveToDisk(string path)
 		{
             WzBinaryWriter wzWriter = new WzBinaryWriter(File.Create(path), WzIv);
-            string currEntry;
-            for (int i = 0; i < listEntries.Count; i++)
+            for (int i = 0; i < listEntries.Count - 1; i++)
             {
-                currEntry = listEntries[i].Name;
-                if (i == listEntries.Count - 1)
-                    currEntry = currEntry.Substring(0, currEntry.Length - 1) + "/";
-                wzWriter.Write(currEntry.Length);
-                //wzWriter.Write(
+                SaveListString(listEntries[i].Name, wzWriter);
             }
+            string lastEntry = listEntries[listEntries.Count].Name;
+            SaveListString(lastEntry.Substring(0, lastEntry.Length - 1) + "/", wzWriter);
 		}
+
+        private void SaveListString(string s, WzBinaryWriter wzWriter)
+        {
+            wzWriter.WriteCompressedInt(s.Length);
+            char[] encryptedChars = wzWriter.EncryptString(s + (char)0);
+            for (int i = 0; i < encryptedChars.Length; i++)
+            {
+                wzWriter.Write((short)encryptedChars[i]);
+            }
+        }
 
         public override void Remove()
         {

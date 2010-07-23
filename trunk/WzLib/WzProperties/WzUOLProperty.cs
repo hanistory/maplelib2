@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
-//uncomment to enable UOL resolving, comment to disable it
+//uncomment to enable automatic UOL resolving, comment to disable it
 #define UOLRES
 
 using System.IO;
@@ -31,7 +31,7 @@ namespace MapleLib.WzLib.WzProperties
 		#region Fields
 		internal string name, val;
 		internal IWzObject parent;
-		internal WzImage imgParent;
+		//internal WzImage imgParent;
 		internal IWzObject linkVal;
 		#endregion
 
@@ -64,48 +64,41 @@ namespace MapleLib.WzLib.WzProperties
 		/// </summary>
 		public override IWzObject Parent { get { return parent; } internal set { parent = value; } }
 
-		/// <summary>
+		/*/// <summary>
 		/// The image that this property is contained in
 		/// </summary>
-		public override WzImage ParentImage { get { return imgParent; } internal set { imgParent = value; } }
+		public override WzImage ParentImage { get { return imgParent; } internal set { imgParent = value; } }*/
 
 		/// <summary>
 		/// The name of the property
 		/// </summary>
 		public override string Name { get { return name; } set { name = value; } }
 
+#if UOLRES
 		public override List<IWzImageProperty> WzProperties
 		{
 			get
 			{
-#if UOLRES
-                return LinkValue is IWzImageProperty ? ((IWzImageProperty)LinkValue).WzProperties : null;
-#else
-                return new List<IWzImageProperty>;
-#endif
+               return LinkValue is IWzImageProperty ? ((IWzImageProperty)LinkValue).WzProperties : null;
 			}
 		}
 
-		public override IWzImageProperty this[string name]
+
+        public override IWzImageProperty this[string name]
 		{
 			get
 			{
-#if UOLRES
+
                 return LinkValue is IWzImageProperty ? ((IWzImageProperty)LinkValue)[name] : LinkValue is WzImage ? ((WzImage)LinkValue)[name] : null;
-#else
-                return null;
-#endif
 			}
 		}
 
 		public override IWzImageProperty GetFromPath(string path)
 		{
-#if UOLRES
             return LinkValue is IWzImageProperty ? ((IWzImageProperty)LinkValue).GetFromPath(path) : LinkValue is WzImage ? ((WzImage)LinkValue).GetFromPath(path) : null;
-#else
-            return null;
-#endif
 		}
+#endif
+
 		/// <summary>
 		/// The WzPropertyType of the property
 		/// </summary>
@@ -199,6 +192,7 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
         #region Cast Values
+#if UOLRES
         internal override System.Drawing.Bitmap ToBitmap(System.Drawing.Bitmap def)
         {
             return LinkValue.ToBitmap(def);
@@ -243,6 +237,13 @@ namespace MapleLib.WzLib.WzProperties
         {
             return LinkValue.ToUnsignedShort(def);
         }
+
+#else
+        public override string ToString()
+        {
+            return val;
+        }
+#endif
         #endregion
     }
 }

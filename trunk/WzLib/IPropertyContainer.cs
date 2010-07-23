@@ -28,5 +28,6 @@ namespace MapleLib.WzLib
 		void RemoveProperty(IWzImageProperty prop);
 		void ClearProperties();
         List<IWzImageProperty> WzProperties { get; }
+        IWzImageProperty this[string name] { get; }
 	}
 }

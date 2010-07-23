@@ -169,9 +169,21 @@ namespace MapleLib.WzLib.Util
 			}
 		}
 
-/*        public void WriteEncryptedString(string value)
+        public char[] EncryptString(string stringToDecrypt)
         {
-        }*/
+            char[] outputChars = new char[stringToDecrypt.Length];
+            for (int i = 0; i < stringToDecrypt.Length; i++)
+                outputChars[i] = (char)(stringToDecrypt[i] ^ ((char)((WzKey[i * 2 + 1] << 8) + WzKey[i * 2])));
+            return outputChars;
+        }
+
+        public char[] EncryptNonUnicodeString(string stringToDecrypt)
+        {
+            char[] outputChars = new char[stringToDecrypt.Length];
+            for (int i = 0; i < stringToDecrypt.Length; i++)
+                outputChars[i] = (char)(stringToDecrypt[i] ^ WzKey[i]);
+            return outputChars;
+        }
 
 		public void WriteNullTerminatedString(string value)
 		{

@@ -23,5 +23,6 @@ namespace MapleLib.WzLib
     {
         public abstract string FilePath { get; }
         public abstract WzMapleVersion MapleVersion { get; set; }
+        public abstract void SaveToDisk(string path);
     }
 }

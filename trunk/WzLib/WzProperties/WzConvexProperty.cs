@@ -30,7 +30,7 @@ namespace MapleLib.WzLib.WzProperties
         internal List<IExtended> properties = new List<IExtended>();
 		internal string name;
 		internal IWzObject parent;
-		internal WzImage imgParent;
+		//internal WzImage imgParent;
 		#endregion
 
 		#region Inherited Members
@@ -51,7 +51,7 @@ namespace MapleLib.WzLib.WzProperties
         public void AddProperty(IExtended prop)
         {
             ((IWzImageProperty)prop).Parent = this;
-            ((IWzImageProperty)prop).ParentImage = this.ParentImage;
+            //((IWzImageProperty)prop).ParentImage = this.ParentImage;
             if (prop is IExtended)
                 properties.Add(prop);
             else throw new Exception("Convex can only hold extended properties");
@@ -73,10 +73,10 @@ namespace MapleLib.WzLib.WzProperties
 		/// The parent of the object
 		/// </summary>
 		public override IWzObject Parent { get { return parent; } internal set { parent = value; } }
-		/// <summary>
+		/*/// <summary>
 		/// The image that this property is contained in
 		/// </summary>
-		public override WzImage ParentImage { get { return imgParent; } internal set { imgParent = value; } }
+		public override WzImage ParentImage { get { return imgParent; } internal set { imgParent = value; } }*/
 		/// <summary>
 		/// The WzPropertyType of the property
 		/// </summary>
@@ -203,7 +203,7 @@ namespace MapleLib.WzLib.WzProperties
             if (!(prop is IExtended))
                 throw new Exception("Property is not IExtended");
             prop.Parent = this;
-            prop.ParentImage = this.ParentImage;
+            //prop.ParentImage = this.ParentImage;
 			properties.Add((IExtended)prop);
 		}
 

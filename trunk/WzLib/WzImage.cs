@@ -41,6 +41,7 @@ namespace MapleLib.WzLib
 		internal long tempFileStart = 0;
 		internal long tempFileEnd = 0;
         internal bool changed = false;
+        internal bool parseEverything = false;
 		#endregion
 
         public WzImage DeepClone()
@@ -200,8 +201,25 @@ namespace MapleLib.WzLib
 		/// Parses the image from the wz filetod
 		/// </summary>
 		/// <param name="wzReader">The BinaryReader that is currently reading the wz file</param>
+        public void ParseImage(bool parseEverything)
+        {
+            this.parseEverything = parseEverything;
+            long originalPos = reader.BaseStream.Position;
+            reader.BaseStream.Position = offset;
+            byte b = reader.ReadByte();
+            if (b != 0x73 || reader.ReadString() != "Property" || reader.ReadUInt16() != 0)
+                return;
+            properties.AddRange(IWzImageProperty.ParsePropertyList(offset, reader, this, this));
+            parsed = true;
+        }
+
+        /// <summary>
+		/// Parses the image from the wz filetod
+		/// </summary>
+		/// <param name="wzReader">The BinaryReader that is currently reading the wz file</param>
 		public void ParseImage()
 		{
+            this.parseEverything = false;
 			long originalPos = reader.BaseStream.Position;
 			reader.BaseStream.Position = offset;
 			byte b = reader.ReadByte();
@@ -273,7 +291,7 @@ namespace MapleLib.WzLib
 		public void AddProperty(IWzImageProperty prop)
 		{
             prop.Parent = this;
-            prop.ParentImage = this;
+            //prop.ParentImage = this;
 			if (reader != null) if (!parsed) ParseImage();
             properties.Add(prop);
 		}
