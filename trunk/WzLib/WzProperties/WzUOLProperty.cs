@@ -230,7 +230,8 @@ namespace MapleLib.WzLib.WzProperties
 
         public override string ToString()
         {
-            return LinkValue.ToString();
+            return val;
+            //return LinkValue.ToString();
         }
 
         internal override ushort ToUnsignedShort(ushort def)

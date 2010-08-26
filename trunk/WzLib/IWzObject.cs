@@ -27,6 +27,7 @@ namespace MapleLib.WzLib
 	{
         private object tag = null;
         private object tag2 = null;
+        private object tag3 = null;
 
 		public abstract void Dispose();
 
@@ -59,21 +60,44 @@ namespace MapleLib.WzLib
             }
         }
 
-        public virtual object Tag
+        /// <summary>
+        /// Used in HaCreator to save already parsed images
+        /// </summary>
+        public virtual object HCTag
         {
             get { return tag; }
             set { tag = value; }
         }
 
-        public virtual object Tag2
+        /// <summary>
+        /// Used in HaCreator's MapSimulator to save already parsed textures
+        /// </summary>
+        public virtual object MSTag
         {
             get { return tag2; }
             set { tag2 = value; }
         }
 
+        /// <summary>
+        /// Used in HaRepacker to save WzNodes
+        /// </summary>
+        public virtual object HRTag
+        {
+            get { return tag3; }
+            set { tag3 = value; }
+        }
+
         public virtual object WzValue { get { return null; } }
 
         public abstract void Remove();
+
+        public IWzFile GetWzFile()
+        {
+            IWzObject currParent = this;
+            while (currParent != null && !(currParent is IWzFile))
+                currParent = currParent.Parent;
+            return (IWzFile)currParent;
+        }
 
         //Credits to BluePoop for the idea of using cast overriding
         #region Cast Values

@@ -37,7 +37,7 @@ namespace MapleLib.MapleCryptoLib
             };
 
 		/// <summary>
-		/// ShuffleBytes used my MapleStory to generate a new IV
+		/// ShuffleBytes used by MapleStory to generate a new IV
 		/// </summary>
 		public static byte[] bShuffle = new byte[256] {//16 * 16
             0xEC, 0x3F, 0x77, 0xA4, 0x45, 0xD0, 0x71, 0xBF, 0xB7, 0x98, 0x20, 0xFC, 0x4B, 0xE9, 0xB3, 0xE1,

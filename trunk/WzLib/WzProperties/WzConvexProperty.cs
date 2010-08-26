@@ -27,7 +27,7 @@ namespace MapleLib.WzLib.WzProperties
 	public class WzConvexProperty : IExtended, IPropertyContainer
 	{
 		#region Fields
-        internal List<IExtended> properties = new List<IExtended>();
+        internal List<IWzImageProperty> properties = new List<IWzImageProperty>();
 		internal string name;
 		internal IWzObject parent;
 		//internal WzImage imgParent;
@@ -42,7 +42,7 @@ namespace MapleLib.WzLib.WzProperties
         public override IWzImageProperty DeepClone()
         {
             WzConvexProperty clone = (WzConvexProperty)MemberwiseClone();
-            clone.properties = new List<IExtended>();
+            clone.properties = new List<IWzImageProperty>();
             foreach (IWzImageProperty prop in properties)
                 clone.properties.Add((IExtended)prop.DeepClone());
             return clone;
@@ -52,9 +52,9 @@ namespace MapleLib.WzLib.WzProperties
         {
             ((IWzImageProperty)prop).Parent = this;
             //((IWzImageProperty)prop).ParentImage = this.ParentImage;
-            if (prop is IExtended)
+//            if (prop is IExtended)
                 properties.Add(prop);
-            else throw new Exception("Convex can only hold extended properties");
+//            else throw new Exception("Convex can only hold extended properties");
         }
 
         public void AddProperties(IExtended[] props)
@@ -66,7 +66,7 @@ namespace MapleLib.WzLib.WzProperties
         }
         public void RemoveProperty(IWzImageProperty prop)
         {
-            properties.Remove((IExtended)prop);
+            properties.Remove(/*(IExtended)*/prop);
         }
 
 		/// <summary>
@@ -88,7 +88,7 @@ namespace MapleLib.WzLib.WzProperties
 		{
 			get
 			{
-                return properties.ConvertAll<IWzImageProperty>(new Converter<IExtended, IWzImageProperty>(delegate(IExtended source) { return (IWzImageProperty)source; }));
+                return properties; //properties.ConvertAll<IWzImageProperty>(new Converter<IExtended, IWzImageProperty>(delegate(IExtended source) { return (IWzImageProperty)source; }));
 			}
 		}
 		/// <summary>
@@ -154,9 +154,11 @@ namespace MapleLib.WzLib.WzProperties
 		}
 		public override void WriteValue(MapleLib.WzLib.Util.WzBinaryWriter writer)
 		{
+            List<IExtended> extendedProps = new List<IExtended>(properties.Count);
+            foreach (IWzImageProperty prop in properties) if (prop is IExtended) extendedProps.Add((IExtended)prop);
 			writer.WriteStringValue("Shape2D#Convex2D", 0x73, 0x1B);
-			writer.WriteCompressedInt(ExtendedProperties.Count);
-            for (int i = 0; i < ExtendedProperties.Count; i++)
+            writer.WriteCompressedInt(extendedProps.Count);
+            for (int i = 0; i < extendedProps.Count; i++)
 			{
                 properties[i].WriteValue(writer);
 			}
@@ -178,10 +180,10 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Custom Members
-		/// <summary>
+/*		/// <summary>
 		/// The WzExtendedPropertys contained in this WzConvexProperty
 		/// </summary>
-        public List<IExtended> ExtendedProperties { get { return properties; } }
+        public List<IExtended> ExtendedProperties { get { return properties; } }*/
 		/// <summary>
 		/// Creates a blank WzConvexProperty
 		/// </summary>

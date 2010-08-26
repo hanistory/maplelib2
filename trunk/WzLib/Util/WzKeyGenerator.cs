@@ -82,13 +82,13 @@ namespace MapleLib.WzLib.Util
 			byte[] wzKey = new byte[ushort.MaxValue];
 			for (int i = 0; i < (wzKey.Length / 16); i++)
 			{
-				byte[] output = new byte[16];
 				cryptoStream.Write(input, 0, 16);
 				input = memStream.ToArray();
-				Array.Copy(memStream.ToArray(), 0, wzKey, (i * 16), 16);
+				Array.Copy(input, 0, wzKey, (i * 16), 16);
 				memStream.Position = 0;
 			}
-
+            cryptoStream.Write(input, 0, 16);
+            Array.Copy(memStream.ToArray(), 0, wzKey, (wzKey.Length - 15), 15);
 			try
 			{
 				cryptoStream.Dispose();
@@ -96,7 +96,7 @@ namespace MapleLib.WzLib.Util
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("Error disposing AES streams" + e);
+				Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "Error disposing AES streams" + e);
 			}
 
 			return wzKey;

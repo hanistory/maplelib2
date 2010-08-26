@@ -203,6 +203,8 @@ namespace MapleLib.WzLib
 		/// <param name="wzReader">The BinaryReader that is currently reading the wz file</param>
         public void ParseImage(bool parseEverything)
         {
+            if (Parsed) return;
+            else if (Changed) { Parsed = true; return; }
             this.parseEverything = parseEverything;
             long originalPos = reader.BaseStream.Position;
             reader.BaseStream.Position = offset;
@@ -219,6 +221,8 @@ namespace MapleLib.WzLib
 		/// <param name="wzReader">The BinaryReader that is currently reading the wz file</param>
 		public void ParseImage()
 		{
+            if (Parsed) return;
+            else if (Changed) { Parsed = true; return; }
             this.parseEverything = false;
 			long originalPos = reader.BaseStream.Position;
 			reader.BaseStream.Position = offset;

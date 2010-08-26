@@ -108,13 +108,8 @@ namespace MapleLib.WzLib.WzProperties
         /// <summary>
         /// The actual bitmap
         /// </summary>
-        [Obsolete("To enable more control over memory usage, this property was superseded by the GetPng\\SetPng methods and will be removed in the future")]
         public Bitmap PNG
         {
-            get
-            {
-                return GetPNG(false);
-            }
             set
             {
                 png = value;
@@ -233,7 +228,7 @@ namespace MapleLib.WzLib.WzProperties
             zip.Close();
             memStream.Position = 0;
             byte[] buffer = new byte[memStream.Length + 2];
-            Console.WriteLine(BitConverter.ToString(memStream.ToArray()));
+            //Console.WriteLine(BitConverter.ToString(memStream.ToArray()));
             memStream.Read(buffer, 2, buffer.Length - 2);
             memStream.Close();
             memStream.Dispose();
@@ -253,8 +248,8 @@ namespace MapleLib.WzLib.WzProperties
 
             BinaryReader reader = new BinaryReader(new MemoryStream(compressedBytes));
             ushort header = reader.ReadUInt16();
-            listWzUsed = header == 0x9C78;
-            if (header == 0x9C78)
+            listWzUsed = header != 0x9C78 && header != 0xDA78;
+            if (!listWzUsed)
             {
                 zlib = new DeflateStream(reader.BaseStream, CompressionMode.Decompress);
             }
@@ -268,6 +263,7 @@ namespace MapleLib.WzLib.WzProperties
                 while (reader.BaseStream.Position < endOfPng)
                 {
                     blocksize = reader.ReadInt32();
+                    File.WriteAllBytes(@"D:\test2.bin", imgParent.reader.WzKey);
                     for (int i = 0; i < blocksize; i++)
                     {
                         dataStream.WriteByte((byte)(reader.ReadByte() ^ imgParent.reader.WzKey[i]));

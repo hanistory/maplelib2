@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.Xml;
 using System.Drawing;
+using System.Threading;
 
 namespace MapleLib.WzLib.Serialization
 {
@@ -78,6 +79,54 @@ namespace MapleLib.WzLib.Serialization
             int result = dir.WzImages.Count;
             dir.WzDirectories.ForEach(subdir => result += CountImages(subdir));
             return result;
+        }*/
+
+        //public delegate void WzImageMultithreadedSerializer(List<WzImage> imagesToDump, string basePath, int threadNumber, int threadCount);
+/*        protected delegate void WzImageSerializerMethod(WzImage toSerialize, string path);
+
+        protected void ExtractDirectoryMultithreaded(WzDirectory dir, string basePath, string extension, WzImageSerializerMethod serializerMethod)
+        {
+            if (basePath.Substring(basePath.Length - 1, 1) != @"\") basePath += @"\";
+            List<WzImage> images = dir.GetChildImages();
+            int threadCount = Environment.ProcessorCount;
+            ManualResetEvent[] waitHandles = new ManualResetEvent[threadCount];
+            for (int i =0; i< threadCount; i++)
+            {
+                ManualResetEvent resetEvent = new ManualResetEvent(false);
+                waitHandles[i] = resetEvent;
+                new Thread(new ParameterizedThreadStart(WzImageListExtractionThread)).Start(
+                    new object[] {
+                        images,
+                        basePath,
+                        extension,
+                        i,
+                        threadCount,
+                        serializerMethod,
+                        resetEvent
+                    });
+            }
+            WaitHandle.WaitAll(waitHandles);
+        }
+
+        private void WzImageListExtractionThread(object param)
+        {
+            object[] objArr = (object[])param;
+            List<WzImage> images = (List<WzImage>)objArr[0];
+            string basePath = (string)objArr[1];
+            string ext = (string)objArr[2];
+            int threadNum = (int)objArr[3];
+            int threadCount = (int)objArr[4];
+            WzImageSerializerMethod serializerMethod = (WzImageSerializerMethod)objArr[5];
+            ManualResetEvent resetEvent = (ManualResetEvent)objArr[6];
+            for (int i = threadNum; i<images.Count; i+= threadCount)
+            {
+                WzImage img = images[i];
+                string path = basePath + img.FullPath + "." + ext;
+                string dir = Path.GetDirectoryName(path);
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                serializerMethod.Invoke(img, path);
+            }
+            resetEvent.Set();
         }*/
 
         protected void WritePropertyToXML(TextWriter tw, string depth, IWzImageProperty prop)
@@ -334,6 +383,10 @@ namespace MapleLib.WzLib.Serialization
             MemoryStream stream = new MemoryStream(bytes);
             WzBinaryReader wzReader = new WzBinaryReader(stream, iv);
             WzImage img = new WzImage(name, wzReader);
+            img.BlockSize = bytes.Length;
+            img.Checksum = 0;
+            foreach (byte b in bytes) img.Checksum += b;
+            img.Offset = 0;
             if (freeResources)
             {
                 img.ParseImage(true);
@@ -343,12 +396,18 @@ namespace MapleLib.WzLib.Serialization
             return img;
         }
 
-        public WzImage WzImageFromIMGFile(string inPath, WzMapleVersion version, string name)
+        public WzImage WzImageFromIMGFile(string inPath, byte[] iv, string name)
         {
-            byte[] iv = WzTool.GetIvByMapleVersion(version);
             FileStream stream = File.OpenRead(inPath);
             WzBinaryReader wzReader = new WzBinaryReader(stream, iv);
             WzImage img = new WzImage(name, wzReader);
+            img.BlockSize = (int)stream.Length;
+            img.Checksum = 0;
+            byte[] bytes = new byte[stream.Length];
+            stream.Read(bytes, 0, (int)stream.Length);
+            stream.Position = 0;
+            foreach (byte b in bytes) img.Checksum += b;
+            img.Offset = 0;
             if (freeResources)
             {
                 img.ParseImage(true);
@@ -360,7 +419,7 @@ namespace MapleLib.WzLib.Serialization
     }
 
 
-    public class WzPngSerializer : ProgressingWzSerializer, IWzImageSerializer, IWzObjectSerializer
+    public class WzPngMp3Serializer : ProgressingWzSerializer, IWzImageSerializer, IWzObjectSerializer
     {
         //List<WzImage> imagesToUnparse = new List<WzImage>();
         private string outPath;
@@ -423,6 +482,11 @@ namespace MapleLib.WzLib.Serialization
                 bmp.Save(path, ImageFormat.Png);
                 //curr++;
             }
+            else if (currObj is WzSoundProperty)
+            {
+                string path = outPath + currObj.Name + ".mp3";
+                ((WzSoundProperty)currObj).SaveToFile(path);
+            }
             else if (currObj is WzImage)
             {
                 if (!Directory.Exists(outPath)) Directory.CreateDirectory(outPath);
@@ -450,7 +514,7 @@ namespace MapleLib.WzLib.Serialization
         private void exportXmlInternal(WzImage img, string path)
         {
             bool parsed = img.Parsed;
-            if (!parsed) img.ParseImage();
+            if (!parsed)/* lock (img.reader) */img.ParseImage();
             curr++;
             TextWriter tw = new StreamWriter(path);
             tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + lineBreak);
@@ -483,12 +547,12 @@ namespace MapleLib.WzLib.Serialization
         {
             total = dir.CountImages(); curr = 0;
             exportDirXmlInternal(dir, path);
+            //ExtractDirectoryMultithreaded(dir, path, "xml", new WzImageSerializerMethod(exportXmlInternal));
         }
 
         public void SerializeFile(WzFile file, string path)
         {
-            total = file.WzDirectory.CountImages(); curr = 0;
-            exportDirXmlInternal(file.WzDirectory, path);
+            SerializeDirectory(file.WzDirectory, path);
         }
     }
 
@@ -551,6 +615,17 @@ namespace MapleLib.WzLib.Serialization
     {
         public static NumberFormatInfo formattingInfo;
 
+        private bool useMemorySaving;
+        private byte[] iv;
+        private WzImgDeserializer imgDeserializer = new WzImgDeserializer(false);
+
+        public WzXmlDeserializer(bool useMemorySaving, byte[] iv)
+            : base()
+        {
+            this.useMemorySaving = useMemorySaving;
+            this.iv = iv;
+        }
+
         #region Public Functions
         public List<IWzObject> ParseXML(string path)
         {
@@ -574,7 +649,7 @@ namespace MapleLib.WzLib.Serialization
             else if (mainElement.Name == "imgdir")
             {
                 total = 1;
-                result.Add(GetImageFromClassicXml(mainElement));
+                result.Add(ParseXMLWzImg(mainElement));
                 curr++;
             }
             else throw new InvalidDataException("unknown main XML prop " + mainElement.Name);
@@ -610,14 +685,24 @@ namespace MapleLib.WzLib.Serialization
 
         internal WzImage ParseXMLWzImg(XmlElement imgElement)
         {
-            WzImage result = new WzImage(imgElement.GetAttribute("name"));
+            string name = imgElement.GetAttribute("name");
+            WzImage result = new WzImage(name);
             foreach (XmlElement subelement in imgElement)
                 result.WzProperties.Add(ParsePropertyFromXMLElement(subelement));
             result.Changed = true;
+            if (this.useMemorySaving)
+            {
+                string path = Path.GetTempFileName();
+                WzBinaryWriter wzWriter = new WzBinaryWriter(File.Create(path), iv);
+                result.SaveImage(wzWriter);
+                wzWriter.Close();
+                result.Dispose();
+                result = imgDeserializer.WzImageFromIMGFile(path, iv, name);
+            }
             return result;
         }
 
-        internal WzImage GetImageFromClassicXml(XmlElement element)
+/*        internal WzImage GetImageFromClassicXml(XmlElement element)
         {
             total = 1; curr = 0;
             WzImage result = new WzImage(element.GetAttribute("name"));
@@ -625,7 +710,7 @@ namespace MapleLib.WzLib.Serialization
                 result.AddProperty(ParsePropertyFromXMLElement(subelement));
             curr++;
             return result;
-        }
+        }*/
 
         //TODO: improve replace, add to names
         internal IWzImageProperty ParsePropertyFromXMLElement(XmlElement element)

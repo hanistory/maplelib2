@@ -140,61 +140,71 @@ namespace MapleLib.WzLib
 		/// <summary>
 		/// Parses the WzDirectory
 		/// </summary>
-		internal void ParseDirectory()
-		{
-			int entryCount = reader.ReadCompressedInt();
-			for (int i = 0; i < entryCount; i++)
-			{
-				byte type = reader.ReadByte();
-				string fname = null;
-				int fsize;
-				int checksum;
-				uint offset;
+        internal void ParseDirectory()
+        {
+            int entryCount = reader.ReadCompressedInt();
+            for (int i = 0; i < entryCount; i++)
+            {
+                byte type = reader.ReadByte();
+                string fname = null;
+                int fsize;
+                int checksum;
+                uint offset;
 
-				long rememberPos = 0;
-				if (type == 2)
-				{
-					int stringOffset = reader.ReadInt32();
-					rememberPos = reader.BaseStream.Position;
-					reader.BaseStream.Position = reader.Header.FStart + stringOffset;
-					type = reader.ReadByte();
-					fname = reader.ReadString();
-				}
-				else if (type == 3 || type == 4)
-				{
-					fname = reader.ReadString();
-					rememberPos = reader.BaseStream.Position;
-				}
-				reader.BaseStream.Position = rememberPos;
-				fsize = reader.ReadCompressedInt();
-				checksum = reader.ReadCompressedInt();
-				offset = reader.ReadOffset();
-				if (type == 3)
-				{
-					WzDirectory subDir = new WzDirectory(reader, fname, hash, WzIv);
-					subDir.BlockSize = fsize;
-					subDir.Checksum = checksum;
-					subDir.Offset = offset;
-					subDir.Parent = this;
-					subDirs.Add(subDir);
-				}
-				else
-				{
-					WzImage img = new WzImage(fname, reader);
-					img.BlockSize = fsize;
-					img.Checksum = checksum;
-					img.Offset = offset;
-					img.Parent = this;
-					images.Add(img);
-				}
-			}
+                long rememberPos = 0;
+                if (type == 1) //01 XX 00 00 00 00 00 OFFSET (4 bytes) 
+                {
+                    int unknown = reader.ReadInt32();
+                    reader.ReadInt16();
+                    uint offs = reader.ReadOffset();
+                    continue;
+                }
+                else if (type == 2)
+                {
+                    int stringOffset = reader.ReadInt32();
+                    rememberPos = reader.BaseStream.Position;
+                    reader.BaseStream.Position = reader.Header.FStart + stringOffset;
+                    type = reader.ReadByte();
+                    fname = reader.ReadString();
+                }
+                else if (type == 3 || type == 4)
+                {
+                    fname = reader.ReadString();
+                    rememberPos = reader.BaseStream.Position;
+                }
+                else
+                {
+                }
+                reader.BaseStream.Position = rememberPos;
+                fsize = reader.ReadCompressedInt();
+                checksum = reader.ReadCompressedInt();
+                offset = reader.ReadOffset();
+                if (type == 3)
+                {
+                    WzDirectory subDir = new WzDirectory(reader, fname, hash, WzIv);
+                    subDir.BlockSize = fsize;
+                    subDir.Checksum = checksum;
+                    subDir.Offset = offset;
+                    subDir.Parent = this;
+                    subDirs.Add(subDir);
+                }
+                else
+                {
+                    WzImage img = new WzImage(fname, reader);
+                    img.BlockSize = fsize;
+                    img.Checksum = checksum;
+                    img.Offset = offset;
+                    img.Parent = this;
+                    images.Add(img);
+                }
+            }
 
-			foreach (WzDirectory subdir in subDirs)
-			{
-				reader.BaseStream.Position = subdir.offset;
-				subdir.ParseDirectory();
-			}
-		}
+            foreach (WzDirectory subdir in subDirs)
+            {
+                reader.BaseStream.Position = subdir.offset;
+                subdir.ParseDirectory();
+            }
+        }
 
 		internal void SaveImages(BinaryWriter wzWriter, FileStream fs)
 		{
@@ -459,7 +469,7 @@ namespace MapleLib.WzLib
 			imgFiles.AddRange(images);
 			foreach (WzDirectory subDir in subDirs)
 			{
-				imgFiles.AddRange(subDir.images);
+				imgFiles.AddRange(subDir.GetChildImages());
 			}
 			return imgFiles;
 		}

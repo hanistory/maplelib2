@@ -90,7 +90,8 @@ namespace MapleLib.MapleCryptoLib
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("Error disposing AES streams" + e);
+                Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "Error disposing AES streams" + e);
+				//Console.WriteLine("Error disposing AES streams" + e);
 			}
 
 			return data;

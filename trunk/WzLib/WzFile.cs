@@ -172,7 +172,7 @@ namespace MapleLib.WzLib
 		{
 			if (this.path == null)
 			{
-				Console.WriteLine("[Error] Path is null");
+				Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Path is null");
 				return;
 			}
 

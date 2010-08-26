@@ -62,6 +62,14 @@ namespace MapleLib.PacketLib
 			_listener.BeginAccept(new AsyncCallback(OnClientConnect), null);
 		}
 
+        /// <summary>
+        /// Stops listening for connections
+        /// </summary>
+        public void StopListening()
+        {
+            _listener.Disconnect(true);
+        }
+
 		/// <summary>
 		/// Client connected handler
 		/// </summary>
@@ -82,11 +90,13 @@ namespace MapleLib.PacketLib
 			}
 			catch (ObjectDisposedException)
 			{
-				Console.WriteLine("[Error] OnClientConnect: Socket closed.");
+                Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] OnClientConnect: Socket closed.");
+				//Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] OnClientConnect: Socket closed.");
 			}
 			catch (Exception se)
 			{
-				Console.WriteLine("[Error] OnClientConnect: " + se);
+                Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] OnClientConnect: " + se);
+				//Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] OnClientConnect: " + se);
 			}
 		}
 	}

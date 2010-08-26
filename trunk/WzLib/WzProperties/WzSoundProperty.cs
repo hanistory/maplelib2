@@ -30,6 +30,7 @@ namespace MapleLib.WzLib.WzProperties
 		internal byte[] mp3bytes = null;
 		internal IWzObject parent;
         internal int len_ms;
+        internal byte[] header;
 		//internal WzImage imgParent;
         internal WzBinaryReader wzReader;
         internal long offs;
@@ -73,6 +74,7 @@ namespace MapleLib.WzLib.WzProperties
 			writer.Write((byte)0);
 			writer.WriteCompressedInt(data.Length);
 			writer.WriteCompressedInt(0);
+            writer.Write(header);
 			writer.Write(data);
 		}
 		public override void ExportXml(StreamWriter writer, int level)
@@ -135,7 +137,8 @@ namespace MapleLib.WzLib.WzProperties
             byte[] headerBytes = new byte[soundHeaderMask.Length];
             Array.Copy(soundHeaderMask, headerBytes, headerBytes.Length);
             for (int i = 0; i < 4; i++) { headerBytes[56 + i] = frequencyBytes[i]; }
-            newProp.mp3bytes = Combine(headerBytes, File.ReadAllBytes(file));
+            newProp.header = headerBytes;
+            newProp.mp3bytes = /*Combine(headerBytes, */File.ReadAllBytes(file)/*)*/;
             return newProp;
         }
         #endregion
@@ -147,8 +150,9 @@ namespace MapleLib.WzLib.WzProperties
             offs = reader.BaseStream.Position;
 			int soundDataLen = reader.ReadCompressedInt();
 			len_ms = reader.ReadCompressedInt();
+            header = reader.ReadBytes(soundHeaderMask.Length);
             if (parseNow)
-			    mp3bytes = reader.ReadBytes(soundDataLen);
+                mp3bytes = reader.ReadBytes(soundDataLen - header.Length);
             reader.BaseStream.Position += soundDataLen;
             wzReader = reader;
 		}
@@ -164,8 +168,8 @@ namespace MapleLib.WzLib.WzProperties
                 wzReader.BaseStream.Position = offs;
                 int soundDataLen = wzReader.ReadCompressedInt();
                 wzReader.ReadCompressedInt();
-                //wzReader.BaseStream.Position += 82;
-                mp3bytes = wzReader.ReadBytes(soundDataLen);
+                wzReader.BaseStream.Position += soundHeaderMask.Length;
+                mp3bytes = wzReader.ReadBytes(soundDataLen - header.Length);
                 wzReader.BaseStream.Position = currentPos;
                 if (saveInMemory)
                     return mp3bytes;

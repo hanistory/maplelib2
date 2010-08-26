@@ -125,5 +125,70 @@ namespace MapleLib.WzLib.Util
 					return new byte[4];
 			}
 		}
+
+        private static int GetRecognizedCharacters(string source)
+        {
+            int result = 0;
+            foreach (char c in source)
+                if (0x20 <= c && c <= 0x7E)
+                    result++;
+            return result;
+        }
+
+        private static double GetDecryptionSuccessRate(string wzPath, WzMapleVersion encVersion, ref short? version)
+        {
+            WzFile wzf;
+            if (version == null)
+                wzf = new WzFile(wzPath, encVersion);
+            else
+                wzf = new WzFile(wzPath, (short)version, encVersion);
+            wzf.ParseWzFile();
+            if (version == null) version = wzf.Version;
+            int recognizedChars = 0;
+            int totalChars = 0;
+            foreach (WzDirectory wzdir in wzf.WzDirectory.WzDirectories)
+            {
+                recognizedChars += GetRecognizedCharacters(wzdir.Name);
+                totalChars += wzdir.Name.Length;
+            }
+            foreach (WzImage wzimg in wzf.WzDirectory.WzImages)
+            {
+                recognizedChars += GetRecognizedCharacters(wzimg.Name);
+                totalChars += wzimg.Name.Length;
+            }
+            wzf.Dispose();
+            return (double)recognizedChars / (double)totalChars;
+        }
+
+        public static WzMapleVersion DetectMapleVersion(string wzFilePath, out short fileVersion)
+        {
+            Hashtable mapleVersionSuccessRates = new Hashtable();
+            short? version = null;
+            mapleVersionSuccessRates.Add(WzMapleVersion.GMS, GetDecryptionSuccessRate(wzFilePath, WzMapleVersion.GMS, ref version));
+            mapleVersionSuccessRates.Add(WzMapleVersion.EMS, GetDecryptionSuccessRate(wzFilePath, WzMapleVersion.EMS, ref version));
+            mapleVersionSuccessRates.Add(WzMapleVersion.BMS, GetDecryptionSuccessRate(wzFilePath, WzMapleVersion.BMS, ref version));
+            fileVersion = (short)version;
+            WzMapleVersion mostSuitableVersion = WzMapleVersion.GMS;
+            double maxSuccessRate = 0;
+            foreach (DictionaryEntry mapleVersionEntry in mapleVersionSuccessRates)
+                if ((double)mapleVersionEntry.Value > maxSuccessRate)
+                {
+                    mostSuitableVersion = (WzMapleVersion)mapleVersionEntry.Key;
+                    maxSuccessRate = (double)mapleVersionEntry.Value;
+                }
+            if (maxSuccessRate < 0.7 && File.Exists(Path.Combine(Path.GetDirectoryName(wzFilePath), "ZLZ.dll")))
+                return WzMapleVersion.GETFROMZLZ;
+            else return mostSuitableVersion;
+        }
+
+        public const int WzHeader = 0x31474B50; //PKG1
+
+        public static bool IsListFile(string path)
+        {
+            BinaryReader reader = new BinaryReader(File.OpenRead(path));
+            bool result = reader.ReadInt32() != WzHeader;
+            reader.Close();
+            return result;
+        }
 	}
 }

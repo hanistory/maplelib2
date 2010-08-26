@@ -43,12 +43,12 @@ namespace MapleLib.PacketLib
 		/// </summary>
 		private MapleCrypto _SIV;
 
-		/// <summary>
-		/// Method to handle packets received
-		/// </summary>
-		public delegate void PacketReceivedHandler(PacketReader packet);
+        /// <summary>
+        /// Method to handle packets received
+        /// </summary>
+        public delegate void PacketReceivedHandler(PacketReader packet, bool mIsInit);
 
-		/// <summary>
+        /// <summary>
 		/// Packet received event
 		/// </summary>
 		public event PacketReceivedHandler OnPacketReceived;
@@ -137,7 +137,8 @@ namespace MapleLib.PacketLib
 			}
 			catch (Exception se)
 			{
-				Console.WriteLine("[Error] Session.WaitForData: " + se);
+                Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.WaitForData: " + se);
+				//Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.WaitForData: " + se);
 			}
 		}
 
@@ -184,7 +185,7 @@ namespace MapleLib.PacketLib
 								short packetLength = (short)MapleCrypto.getPacketLength(packetHeader);
 								if (_type == SessionType.SERVER_TO_CLIENT && !_RIV.checkPacketToServer(BitConverter.GetBytes(packetHeader)))
 								{
-									Console.WriteLine("[Error] Packet check failed. Disconnecting client.");
+									Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Packet check failed. Disconnecting client.");
 									//this.Socket.Close();
 								}
 								socketInfo.State = SocketInfo.StateEnum.Content;
@@ -204,11 +205,11 @@ namespace MapleLib.PacketLib
 								_SIV = new MapleCrypto(reader.ReadBytes(4), version);
 								_RIV = new MapleCrypto(reader.ReadBytes(4), version);
 								byte serverType = reader.ReadByte();
-								if (_type == SessionType.SERVER_TO_CLIENT)
+								if (_type == SessionType.CLIENT_TO_SERVER)
 								{
 									OnInitPacketReceived(version, serverType);
 								}
-								OnPacketReceived(new PacketReader(data));
+								OnPacketReceived(new PacketReader(data), true);
 								WaitForData();
 							}
 							else
@@ -217,7 +218,7 @@ namespace MapleLib.PacketLib
 								MapleCustomEncryption.Decrypt(data);
 								if (data.Length != 0 && OnPacketReceived != null)
 								{
-									OnPacketReceived(new PacketReader(data));
+									OnPacketReceived(new PacketReader(data), false);
 								}
 								WaitForData();
 							}
@@ -226,26 +227,38 @@ namespace MapleLib.PacketLib
 				}
 				else
 				{
-					Console.WriteLine("[Warning] Not enough data");
+					Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Warning] Not enough data");
 					WaitForData(socketInfo);
 				}
 			}
 			catch (ObjectDisposedException)
 			{
-				Console.WriteLine("[Error] Session.OnDataReceived: Socket has been closed");
+				Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.OnDataReceived: Socket has been closed");
 			}
 			catch (SocketException se)
 			{
 				if (se.ErrorCode != 10054)
 				{
-					Console.WriteLine("[Error] Session.OnDataReceived: " + se);
+					Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.OnDataReceived: " + se);
 				}
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[Error] Session.OnDataReceived: " + e);
+				Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.OnDataReceived: " + e);
 			}
 		}
+
+        public void SendInitialPacket(int pVersion, string pPatchLoc, byte[] pRIV, byte[] pSIV, byte pServerType)
+        {
+            PacketWriter writer = new PacketWriter();
+            writer.WriteShort(pPatchLoc == "" ? 0x0D : 0x0E);
+            writer.WriteShort(pVersion);
+            writer.WriteMapleString(pPatchLoc);
+            writer.WriteBytes(pRIV);
+            writer.WriteBytes(pSIV);
+            writer.WriteByte(pServerType);
+            SendRawPacket(writer);
+        }
 
 		/// <summary>
 		/// Encrypts the packet then send it to the client.
@@ -273,6 +286,15 @@ namespace MapleLib.PacketLib
 			System.Buffer.BlockCopy(cryptData, 0, sendData, 4, cryptData.Length);
 			SendRawPacket(sendData);
 		}
+
+        /// <summary>
+        /// Sends a raw packet to the client
+        /// </summary>
+        /// <param name="pPacket">The PacketWriter</param>
+        public void SendRawPacket(PacketWriter pPacket)
+        {
+            SendRawPacket(pPacket.ToArray());
+        }
 
 		/// <summary>
 		/// Sends a raw buffer to the client.

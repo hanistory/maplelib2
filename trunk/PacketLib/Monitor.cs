@@ -136,7 +136,8 @@ namespace MapleLib.PacketLib
 			}
 			catch (Exception se)
 			{
-				Console.WriteLine("[Error] Session.WaitForData: " + se);
+                Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.WaitForData: " + se);
+				//Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.WaitForData: " + se);
 			}
 		}
 
@@ -162,8 +163,8 @@ namespace MapleLib.PacketLib
 				Buffer.BlockCopy(socketInfo.DataBuffer, 0, dataa, 0, received);
                 if (OnPacketReceived != null)
                     OnPacketReceived.Invoke(new PacketReader(dataa));
-				Console.WriteLine(BitConverter.ToString(dataa));
-				Console.WriteLine(HexEncoding.ToStringFromAscii(dataa));
+				//Console.WriteLine(BitConverter.ToString(dataa));
+				//Console.WriteLine(HexEncoding.ToStringFromAscii(dataa));
 				WaitForData();
 				/*if (socketInfo.Index == socketInfo.DataBuffer.Length) {
 					switch (socketInfo.State) {
@@ -173,7 +174,7 @@ namespace MapleLib.PacketLib
 							int packetHeader = headerReader.ReadInt();
 							short packetLength = (short)MapleCrypto.getPacketLength(packetHeader);
 							if (!_RIV.checkPacket(packetHeader)) {
-								Console.WriteLine("[Error] Packet check failed. Disconnecting client.");
+								Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Packet check failed. Disconnecting client.");
 								this.Socket.Close();
 								}
 							socketInfo.State = SocketInfo.StateEnum.Content;
@@ -194,24 +195,27 @@ namespace MapleLib.PacketLib
 							break;
 						}
 					} else {
-					Console.WriteLine("[Warning] Not enough data");
+					Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Warning] Not enough data");
 					WaitForData(socketInfo);
 					}*/
 			}
 			catch (ObjectDisposedException)
 			{
-				Console.WriteLine("[Error] Session.OnDataReceived: Socket has been closed");
+                Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.OnDataReceived: Socket has been closed");
+                //Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.OnDataReceived: Socket has been closed");
 			}
 			catch (SocketException se)
 			{
 				if (se.ErrorCode != 10054)
 				{
-					Console.WriteLine("[Error] Session.OnDataReceived: " + se);
+                    Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.OnDataReceived: " + se);
+					//Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.OnDataReceived: " + se);
 				}
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[Error] Session.OnDataReceived: " + e);
+                Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.OnDataReceived: " + e);
+				//Helpers.ErrorLogger.Log(Helpers.ErrorLevel.Critical, "[Error] Session.OnDataReceived: " + e);
 			}
 		}
 

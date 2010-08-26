@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("MapleLib")]
-[assembly: AssemblyDescription("WZ parsing and repacking library")]
+[assembly: AssemblyDescription("WZ parsing and repacking library developed by Snow and haha01haha01 based on WzLib by Jonyleeson based on algorithms by Fiel, Koolk and various other people")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("KryptoDEV")]
 [assembly: AssemblyProduct("MapleLib")]
