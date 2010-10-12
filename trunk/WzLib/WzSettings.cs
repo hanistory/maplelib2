@@ -44,7 +44,8 @@ namespace MapleLib.WzLib
                     fieldInfo.SetValue(null, InfoTool.GetInt(settingProp));
                 else switch (fieldInfo.FieldType.FullName)
                     {
-                        case "Microsoft.Xna.Framework.Graphics.Color":
+                        //case "Microsoft.Xna.Framework.Graphics.Color":
+                        case "Microsoft.Xna.Framework.Color":
                             if (xnaColorType == null) throw new InvalidDataException("XNA color detected, but XNA type activator is null");
                             argb = BitConverter.GetBytes((uint)((WzDoubleProperty)settingProp).Value);
                             fieldInfo.SetValue(null, Activator.CreateInstance(xnaColorType, argb[2], argb[1], argb[0], argb[3]));
@@ -160,7 +161,8 @@ namespace MapleLib.WzLib
                 SetWzProperty(settingsImage, settingName, WzPropertyType.CompressedInt, fieldInfo.GetValue(null));
             else switch (fieldInfo.FieldType.FullName)
                 {
-                    case "Microsoft.Xna.Framework.Graphics.Color":
+                    //case "Microsoft.Xna.Framework.Graphics.Color":
+                    case "Microsoft.Xna.Framework.Color":
                         object xnaColor = fieldInfo.GetValue(null);
                         //for some odd reason .NET requires casting the result to uint before it can be
                         //casted to double
