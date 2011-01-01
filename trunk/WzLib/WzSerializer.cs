@@ -494,13 +494,13 @@ namespace MapleLib.WzLib.Serialization
             else if (currObj is WzCanvasProperty)
             {
                 Bitmap bmp = ((WzCanvasProperty)currObj).PngProperty.GetPNG(false);
-                string path = outPath + currObj.Name + ".png";
+                string path = outPath + "png";
                 bmp.Save(path, ImageFormat.Png);
                 //curr++;
             }
             else if (currObj is WzSoundProperty)
             {
-                string path = outPath + currObj.Name + ".mp3";
+                string path = outPath + "mp3";
                 ((WzSoundProperty)currObj).SaveToFile(path);
             }
             else if (currObj is WzImage)

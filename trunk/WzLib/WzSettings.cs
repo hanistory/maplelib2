@@ -64,7 +64,7 @@ namespace MapleLib.WzLib
                         case "Microsoft.Xna.Framework.Color":
                             if (xnaColorType == null) throw new InvalidDataException("XNA color detected, but XNA type activator is null");
                             argb = BitConverter.GetBytes((uint)((WzDoubleProperty)settingProp).Value);
-                            fieldInfo.SetValue(null, Activator.CreateInstance(xnaColorType, argb[2], argb[1], argb[0], argb[3]));
+                            fieldInfo.SetValue(null, Activator.CreateInstance(xnaColorType, argb[0], argb[1], argb[2], argb[3]));
                             break;
                         case "System.Drawing.Color":
                             argb = BitConverter.GetBytes((uint)((WzDoubleProperty)settingProp).Value);
