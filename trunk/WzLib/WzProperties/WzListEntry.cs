@@ -76,5 +76,10 @@ namespace MapleLib.WzLib.WzProperties
         {
             get { return WzObjectType.List; }
         }
+
+        public override IWzFile WzFileParent
+        {
+            get { return parentFile; }
+        }
     }
 }

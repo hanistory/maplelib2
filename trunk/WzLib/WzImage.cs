@@ -62,6 +62,7 @@ namespace MapleLib.WzLib
 		/// The name of the image
 		/// </summary>
 		public override string Name { get { return name; } set { name = value; } }
+        public override IWzFile WzFileParent { get { return Parent.WzFileParent; } }
 		/// <summary>
 		/// Is the object parsed
 		/// </summary>

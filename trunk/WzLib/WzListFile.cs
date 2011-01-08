@@ -50,6 +50,7 @@ namespace MapleLib.WzLib
 		public override IWzObject Parent { get { return null; } internal set { } }
         public override string FilePath { get { return filePath; } }
         public override WzMapleVersion MapleVersion { get { return version; } set { version = value; } }
+        public override IWzFile WzFileParent { get { return this; } }
 		public override void Dispose()
 		{
 			wzFileBytes = null;

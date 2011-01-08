@@ -152,7 +152,7 @@ namespace MapleLib.WzLib.WzStructure
                         if (id == null || message == null || (startHour == null ^ endHour == null))
                         {
                             //System.Windows.Forms.MessageBox.Show("Warning", "Warning - incorrect timeMob structure in map data. Skipped and error log was saved.");
-                            WzFile file = (WzFile)image.GetWzFile();
+                            WzFile file = (WzFile)image.WzFileParent;
                             if (file != null)
                                 ErrorLogger.Log(ErrorLevel.IncorrectStructure, "timeMob, map " + image.Name + " of version " + Enum.GetName(typeof(WzMapleVersion), file.MapleVersion) + ", v" + file.Version.ToString());
                         }
@@ -185,7 +185,7 @@ namespace MapleLib.WzLib.WzStructure
                         if (startHour == null || endHour == null || interval == null || propInt == null)
                         {
                             //System.Windows.Forms.MessageBox.Show("Warning", "Warning - incorrect autoLieDetector structure in map data. Skipped and error log was saved.");
-                            WzFile file = (WzFile)image.GetWzFile();
+                            WzFile file = (WzFile)image.WzFileParent;
                             if (file != null)
                                 ErrorLogger.Log(ErrorLevel.IncorrectStructure, "autoLieDetector, map " + image.Name + " of version " + Enum.GetName(typeof(WzMapleVersion), file.MapleVersion) + ", v" + file.Version.ToString());
                         }

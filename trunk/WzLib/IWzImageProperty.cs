@@ -75,6 +75,11 @@ namespace MapleLib.WzLib
 			writer.WriteLine(XmlUtil.Indentation(level) + XmlUtil.OpenNamedTag(this.PropertyType.ToString(), this.Name, true));
 			writer.WriteLine(XmlUtil.Indentation(level) + XmlUtil.CloseTag(this.PropertyType.ToString()));
         }
+
+        public override IWzFile WzFileParent
+        {
+            get { return ParentImage.WzFileParent; }
+        }
         #endregion
 
         #region Extended Properties Parsing

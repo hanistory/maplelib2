@@ -35,6 +35,7 @@ namespace MapleLib.WzLib
 		internal int size, checksum, offsetSize;
 		internal byte[] WzIv;
 		internal IWzObject parent;
+        internal WzFile wzFile;
 		#endregion
 
 		#region Inherited Members
@@ -50,6 +51,12 @@ namespace MapleLib.WzLib
 		/// The WzObjectType of the directory
 		/// </summary>
 		public override WzObjectType ObjectType { get { return WzObjectType.Directory; } }
+
+        public override IWzFile WzFileParent
+        {
+            get { return wzFile; }
+        }
+
 		/// <summary>
 		/// Disposes the obejct
 		/// </summary>
@@ -129,12 +136,14 @@ namespace MapleLib.WzLib
 		/// <param name="reader">The BinaryReader that is currently reading the wz file</param>
 		/// <param name="blockStart">The start of the data block</param>
 		/// <param name="parentname">The name of the directory</param>
-		internal WzDirectory(WzBinaryReader reader, string dirName, uint verHash, byte[] WzIv)
+        /// <param name="wzFile">The parent Wz File</param>
+		internal WzDirectory(WzBinaryReader reader, string dirName, uint verHash, byte[] WzIv, WzFile wzFile)
 		{
 			this.reader = reader;
 			this.name = dirName;
 			this.hash = verHash;
 			this.WzIv = WzIv;
+            this.wzFile = wzFile;
 		}
 
 		/// <summary>
@@ -181,7 +190,7 @@ namespace MapleLib.WzLib
                 offset = reader.ReadOffset();
                 if (type == 3)
                 {
-                    WzDirectory subDir = new WzDirectory(reader, fname, hash, WzIv);
+                    WzDirectory subDir = new WzDirectory(reader, fname, hash, WzIv, wzFile);
                     subDir.BlockSize = fsize;
                     subDir.Checksum = checksum;
                     subDir.Offset = offset;
@@ -420,6 +429,7 @@ namespace MapleLib.WzLib
 		public void AddDirectory(WzDirectory dir)
 		{
 			subDirs.Add(dir);
+            dir.wzFile = wzFile;
 		}
 		/// <summary>
 		/// Clears the list of images

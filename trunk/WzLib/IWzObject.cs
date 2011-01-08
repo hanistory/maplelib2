@@ -43,6 +43,10 @@ namespace MapleLib.WzLib
 		/// Returns the parent object
 		/// </summary>
 		public abstract IWzObject Parent { get; internal set; }
+        /// <summary>
+        /// Returns the parent WZ File
+        /// </summary>
+        public abstract IWzFile WzFileParent { get; }
 
         public string FullPath
         {
@@ -91,13 +95,13 @@ namespace MapleLib.WzLib
 
         public abstract void Remove();
 
-        public IWzFile GetWzFile()
+        /*public IWzFile GetWzFile()
         {
             IWzObject currParent = this;
             while (currParent != null && !(currParent is IWzFile))
                 currParent = currParent.Parent;
             return (IWzFile)currParent;
-        }
+        }*/
 
         //Credits to BluePoop for the idea of using cast overriding
         #region Cast Values

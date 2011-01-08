@@ -85,6 +85,8 @@ namespace MapleLib.WzLib
 
 		public override IWzObject Parent { get { return null; } internal set { } }
 
+        public override IWzFile WzFileParent { get { return this; } }
+
 		public override void Dispose()
 		{
             if (wzDir.reader == null) return;
@@ -199,7 +201,7 @@ namespace MapleLib.WzLib
 						WzDirectory testDirectory = null;
 						try
 						{
-							testDirectory = new WzDirectory(reader, this.name, this.versionHash, this.WzIv);
+							testDirectory = new WzDirectory(reader, this.name, this.versionHash, this.WzIv, this);
 							testDirectory.ParseDirectory();
 						}
 						catch
@@ -220,7 +222,7 @@ namespace MapleLib.WzLib
 								case 0x73:
 								case 0x1b:
 									{
-										WzDirectory directory = new WzDirectory(reader, this.name, this.versionHash, this.WzIv);
+										WzDirectory directory = new WzDirectory(reader, this.name, this.versionHash, this.WzIv, this);
 										directory.ParseDirectory();
 										this.wzDir = directory;
 										return;
@@ -240,7 +242,7 @@ namespace MapleLib.WzLib
 			{
 				this.versionHash = GetVersionHash(version, fileVersion);
 				reader.Hash = this.versionHash;
-				WzDirectory directory = new WzDirectory(reader, this.name, this.versionHash, this.WzIv);
+				WzDirectory directory = new WzDirectory(reader, this.name, this.versionHash, this.WzIv, this);
 				directory.ParseDirectory();
 				this.wzDir = directory;
 			}
