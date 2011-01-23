@@ -95,14 +95,6 @@ namespace MapleLib.WzLib
 
         public abstract void Remove();
 
-        /*public IWzFile GetWzFile()
-        {
-            IWzObject currParent = this;
-            while (currParent != null && !(currParent is IWzFile))
-                currParent = currParent.Parent;
-            return (IWzFile)currParent;
-        }*/
-
         //Credits to BluePoop for the idea of using cast overriding
         #region Cast Values
         public static explicit operator float(IWzObject obj)

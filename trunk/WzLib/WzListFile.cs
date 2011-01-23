@@ -24,119 +24,64 @@ namespace MapleLib.WzLib
 	/// <summary>
 	/// A class that parses and contains the data of a wz list file
 	/// </summary>
-	public class WzListFile : IWzFile
+	public static class ListFileParser
 	{
-		#region Fields
-		internal byte[] wzFileBytes;
-        internal List<WzListEntry> listEntries = new List<WzListEntry>();
-		internal string name = "";
-		internal byte[] WzIv;
-        internal WzMapleVersion version;
-        internal string filePath;
-		#endregion
-
-		/// <summary>
-		/// Name of the WzListFile
-		/// </summary>
-		public override string Name { get { return name; } set { name = value; } }
-		/// <summary>
-		/// The entries in the list wz file
-		/// </summary>
-		public List<WzListEntry> WzListEntries { get { return listEntries; } }
-		/// <summary>
-		/// The WzObjectType of the file
-		/// </summary>
-		public override WzObjectType ObjectType { get { return WzObjectType.File; } }
-		public override IWzObject Parent { get { return null; } internal set { } }
-        public override string FilePath { get { return filePath; } }
-        public override WzMapleVersion MapleVersion { get { return version; } set { version = value; } }
-        public override IWzFile WzFileParent { get { return this; } }
-		public override void Dispose()
-		{
-			wzFileBytes = null;
-			name = null;
-			listEntries.Clear();
-			listEntries = null;
-		}
-
-        
-        public WzListEntry this[string name]
-        {
-            get
-            {
-                foreach (WzListEntry entry in listEntries) if (entry.Name == name) return entry;
-                return null;
-            }
-        }
-
-		/// <summary>
-		/// Open a wz list file from a file on the disk
+        /// <summary>
+		/// Parses a wz list file on the disk
 		/// </summary>
 		/// <param name="filePath">Path to the wz file</param>
-		public WzListFile(string filePath, WzMapleVersion version)
-		{
-            this.filePath = filePath;
-			name = Path.GetFileName(filePath);
-            wzFileBytes = File.ReadAllBytes(filePath);
-            this.version = version;
-            this.WzIv = WzTool.GetIvByMapleVersion(version);
-		}
-
-        public WzListFile(WzMapleVersion version, string name)
+        public static List<string> ParseListFile(string filePath, WzMapleVersion version)
         {
-            this.name = name;
-            this.version = version;
-            this.WzIv = WzTool.GetIvByMapleVersion(version);
+            return ParseListFile(filePath, WzTool.GetIvByMapleVersion(version));
         }
 
-		/// <summary>
-		/// Parses the wz list file
+        /// <summary>
+		/// Parses a wz list file on the disk
 		/// </summary>
-		public void ParseWzFile()
-		{
-			WzBinaryReader wzParser = new WzBinaryReader(new MemoryStream(wzFileBytes), WzIv);
-			while (wzParser.PeekChar() != -1)
-			{
-				int Len = wzParser.ReadInt32();
-				char[] List = new char[Len];
-                for (int i = 0; i < Len; i++)
-                {
-                    List[i] = (char)wzParser.ReadInt16();
-                }
-				wzParser.ReadUInt16(); //encrypted null
-				string Decrypted = wzParser.DecryptString(List);
-				if (wzParser.PeekChar() == -1)
-					if (Decrypted[Decrypted.Length - 1] == '/')
-						Decrypted = Decrypted.TrimEnd("/".ToCharArray()) + "g"; // Last char should always be a g (.img)
-				listEntries.Add(new WzListEntry(Decrypted));
-			}
-			wzParser.Close();
-		}
+		/// <param name="filePath">Path to the wz file</param>
+        public static List<string> ParseListFile(string filePath, byte[] WzIv)
+        {
+            List<string> listEntries = new List<string>();
+            byte[] wzFileBytes = File.ReadAllBytes(filePath);
+            WzBinaryReader wzParser = new WzBinaryReader(new MemoryStream(wzFileBytes), WzIv);
+            while (wzParser.PeekChar() != -1)
+            {
+                int len = wzParser.ReadInt32();
+                char[] strChrs = new char[len];
+                for (int i = 0; i < len; i++)
+                    strChrs[i] = (char)wzParser.ReadInt16();
+                wzParser.ReadUInt16(); //encrypted null
+                string decryptedStr = wzParser.DecryptString(strChrs);
+                listEntries.Add(decryptedStr);
+            }
+            wzParser.Close();
+            int lastIndex= listEntries.Count - 1;
+            string lastEntry = listEntries[lastIndex];
+            listEntries[lastIndex] = lastEntry.Substring(0, lastEntry.Length - 1) + "g";
+            return listEntries;
+        }
 
-		public override void SaveToDisk(string path)
+        public static void SaveToDisk(string path, WzMapleVersion version, List<string> listEntries)
+        {
+            SaveToDisk(path, WzTool.GetIvByMapleVersion(version), listEntries);
+        }
+
+		public static void SaveToDisk(string path, byte[] WzIv, List<string> listEntries)
 		{
+            int lastIndex = listEntries.Count - 1;
+            string lastEntry = listEntries[lastIndex];
+            listEntries[lastIndex] = lastEntry.Substring(0, lastEntry.Length - 1) + "/";
             WzBinaryWriter wzWriter = new WzBinaryWriter(File.Create(path), WzIv);
-            for (int i = 0; i < listEntries.Count - 1; i++)
+            string s;
+            for (int i = 0; i < listEntries.Count; i++)
             {
-                SaveListString(listEntries[i].Name, wzWriter);
+                s = listEntries[i];
+                wzWriter.Write((int)s.Length);
+                char[] encryptedChars = wzWriter.EncryptString(s + (char)0);
+                for (int j = 0; j < encryptedChars.Length; j++)
+                    wzWriter.Write((short)encryptedChars[j]);
             }
-            string lastEntry = listEntries[listEntries.Count].Name;
-            SaveListString(lastEntry.Substring(0, lastEntry.Length - 1) + "/", wzWriter);
+            listEntries[lastIndex] = lastEntry.Substring(0, lastEntry.Length - 1) + "/";
 		}
-
-        private void SaveListString(string s, WzBinaryWriter wzWriter)
-        {
-            wzWriter.WriteCompressedInt(s.Length);
-            char[] encryptedChars = wzWriter.EncryptString(s + (char)0);
-            for (int i = 0; i < encryptedChars.Length; i++)
-            {
-                wzWriter.Write((short)encryptedChars[i]);
-            }
-        }
-
-        public override void Remove()
-        {
-            Dispose();
-        }
     }
 }

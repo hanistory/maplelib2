@@ -38,11 +38,6 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Inherited Members
-        public override void SetValue(object value)
-        {
-            if (value is byte[]) SetDataUnsafe((byte[])value);
-            else SetDataUnsafe(CreateCustomProperty("foo", (string)value).GetBytes(false));
-        }
 
         public override IWzImageProperty DeepClone()
         {
@@ -51,6 +46,11 @@ namespace MapleLib.WzLib.WzProperties
         }
 
 		public override object WzValue { get { return GetBytes(false); } }
+
+        public override void SetValue(object value)
+        {
+            if (value is byte[]) SetBytes((byte[])value);
+        }
 		/// <summary>
 		/// The parent of the object
 		/// </summary>
@@ -73,7 +73,7 @@ namespace MapleLib.WzLib.WzProperties
 			writer.WriteStringValue("Sound_DX8", 0x73, 0x1B);
 			writer.Write((byte)0);
 			writer.WriteCompressedInt(data.Length);
-			writer.WriteCompressedInt(0);
+			writer.WriteCompressedInt(len_ms);
             writer.Write(header);
 			writer.Write(data);
 		}
@@ -93,70 +93,77 @@ namespace MapleLib.WzLib.WzProperties
 
 		#region Custom Members
 		/// <summary>
-		/// The data of the mp3 file
+		/// The data of the mp3 header
 		/// </summary>
-        [Obsolete("To enable more control over memory usage, this property was superseded by the GetBytes method and will be removed in the future")]
-		public byte[] SoundData { get { return GetBytes(false); } }
+        public byte[] Header { get { return header; } set { header = value; } }
         /// <summary>
         /// Length of the mp3 file in milliseconds
         /// </summary>
-        public int Length { get { return len_ms; } }
-		/// <summary>
-		/// Creates a blank WzSoundProperty
-		/// </summary>
-		public WzSoundProperty() { }
+        public int Length { get { return len_ms; } set { len_ms = value; } }
 		/// <summary>
 		/// Creates a WzSoundProperty with the specified name
 		/// </summary>
 		/// <param name="name">The name of the property</param>
-		public WzSoundProperty(string name)
+        /// <param name="reader">The wz reader</param>
+        /// <param name="parseNow">Indicating whether to parse the property now</param>
+        public WzSoundProperty(string name, WzBinaryReader reader, bool parseNow)
 		{
 			this.name = name;
+            wzReader = reader;
+            reader.BaseStream.Position++;
+            offs = reader.BaseStream.Position;
+            //note - soundDataLen does NOT include the length of the header.
+            int soundDataLen = reader.ReadCompressedInt();
+            len_ms = reader.ReadCompressedInt();
+            header = reader.ReadBytes(soundHeaderMask.Length);
+            if (parseNow)
+                mp3bytes = reader.ReadBytes(soundDataLen);
+            else
+                reader.BaseStream.Position += soundDataLen;
 		}
 
-        private static byte[] Combine(byte[] a, byte[] b)
+        public WzSoundProperty(string name)
         {
-            byte[] result = new byte[a.Length + b.Length];
-            Array.Copy(a, 0, result, 0, a.Length);
-            Array.Copy(b, 0, result, a.Length, b.Length);
-            return result;
+            this.name = name;
+            this.len_ms = 0;
+            this.header = null;
+            this.mp3bytes = null;
         }
 
-        public void SetDataUnsafe(byte[] data)
+        /// <summary>
+        /// Creates a WzSoundProperty with the specified name and data
+        /// </summary>
+        /// <param name="name">The name of the property</param>
+        /// <param name="len_ms">The sound length</param>
+        /// <param name="header">The sound header</param>
+        /// <param name="data">The sound data</param>
+        public WzSoundProperty(string name, int len_ms, byte[] header, byte[] data)
         {
+            this.name = name;
+            this.len_ms = len_ms;
+            this.header = header;
             this.mp3bytes = data;
         }
-
-        public static WzSoundProperty CreateCustomProperty(string name, string file)
+        /// <summary>
+        /// Creates a WzSoundProperty with the specified name from a file
+        /// </summary>
+        /// <param name="name">The name of the property</param>
+        /// <param name="file">The path to the sound file</param>
+        public WzSoundProperty(string name, string file)
         {
-            WzSoundProperty newProp = new WzSoundProperty(name);
             MP3Header header = new MP3Header();
             header.ReadMP3Information(file);
-            newProp.len_ms = header.intLength * 1000;
+            this.len_ms = header.intLength * 1000;
             byte[] frequencyBytes = BitConverter.GetBytes(header.intFrequency);
             byte[] headerBytes = new byte[soundHeaderMask.Length];
             Array.Copy(soundHeaderMask, headerBytes, headerBytes.Length);
             for (int i = 0; i < 4; i++) { headerBytes[56 + i] = frequencyBytes[i]; }
-            newProp.header = headerBytes;
-            newProp.mp3bytes = /*Combine(headerBytes, */File.ReadAllBytes(file)/*)*/;
-            return newProp;
+            this.header = headerBytes;
+            this.mp3bytes = File.ReadAllBytes(file);
         }
         #endregion
 
         #region Parsing Methods
-        internal void ParseSound(WzBinaryReader reader, bool parseNow)
-		{
-			reader.BaseStream.Position++;
-            offs = reader.BaseStream.Position;
-			int soundDataLen = reader.ReadCompressedInt();
-			len_ms = reader.ReadCompressedInt();
-            header = reader.ReadBytes(soundHeaderMask.Length);
-            if (parseNow)
-                mp3bytes = reader.ReadBytes(soundDataLen - header.Length);
-            reader.BaseStream.Position += soundDataLen;
-            wzReader = reader;
-		}
-
         public byte[] GetBytes(bool saveInMemory)
         {
             if (mp3bytes != null)
@@ -169,7 +176,7 @@ namespace MapleLib.WzLib.WzProperties
                 int soundDataLen = wzReader.ReadCompressedInt();
                 wzReader.ReadCompressedInt();
                 wzReader.BaseStream.Position += soundHeaderMask.Length;
-                mp3bytes = wzReader.ReadBytes(soundDataLen - header.Length);
+                mp3bytes = wzReader.ReadBytes(soundDataLen);
                 wzReader.BaseStream.Position = currentPos;
                 if (saveInMemory)
                     return mp3bytes;
@@ -180,6 +187,11 @@ namespace MapleLib.WzLib.WzProperties
                     return result;
                 }
             }
+        }
+
+        public void SetBytes(byte[] bytes)
+        {
+            mp3bytes = bytes;
         }
 
         public void SaveToFile(string file)

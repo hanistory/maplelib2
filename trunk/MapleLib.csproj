@@ -111,7 +111,6 @@
     <Compile Include="WzLib\WzProperties\WzCompressedIntProperty.cs" />
     <Compile Include="WzLib\WzProperties\WzConvexProperty.cs" />
     <Compile Include="WzLib\WzProperties\WzDoubleProperty.cs" />
-    <Compile Include="WzLib\WzProperties\WzListEntry.cs" />
     <Compile Include="WzLib\WzProperties\WzNullProperty.cs" />
     <Compile Include="WzLib\WzProperties\WzPngProperty.cs" />
     <Compile Include="WzLib\WzProperties\WzSoundProperty.cs" />

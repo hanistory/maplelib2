@@ -421,6 +421,7 @@ namespace MapleLib.WzLib
 		public void AddImage(WzImage img)
 		{
 			images.Add(img);
+            img.Parent = this;
 		}
 		/// <summary>
 		/// Adds a WzDirectory to the list of sub directories
@@ -430,12 +431,14 @@ namespace MapleLib.WzLib
 		{
 			subDirs.Add(dir);
             dir.wzFile = wzFile;
+            dir.Parent = this;
 		}
 		/// <summary>
 		/// Clears the list of images
 		/// </summary>
 		public void ClearImages()
 		{
+            foreach (WzImage img in images) img.Parent = null;
 			images.Clear();
 		}
 		/// <summary>
@@ -443,6 +446,7 @@ namespace MapleLib.WzLib
 		/// </summary>
 		public void ClearDirectories()
 		{
+            foreach (WzDirectory dir in subDirs) dir.Parent = null;
 			subDirs.Clear();
 		}
 		/// <summary>
@@ -490,6 +494,7 @@ namespace MapleLib.WzLib
 		public void RemoveImage(WzImage image)
 		{
             images.Remove(image);
+            image.Parent = null;
 		}
 		/// <summary>
 		/// Removes a sub directory from the list
@@ -498,6 +503,7 @@ namespace MapleLib.WzLib
 		public void RemoveDirectory(WzDirectory dir)
 		{
             subDirs.Remove(dir);
+            dir.Parent = null;
         }
 
         public WzDirectory DeepClone()

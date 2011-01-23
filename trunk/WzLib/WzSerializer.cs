@@ -185,7 +185,7 @@ namespace MapleLib.WzLib.Serialization
             {
                 WzSoundProperty property7 = (WzSoundProperty)prop;
                 if (ExportBase64Data)
-                    tw.Write(string.Concat(new object[] { depth, "<sound name=\"", EscapeString(property7.Name), "\" basedata=\"", Convert.ToBase64String(property7.GetBytes(false)), "\"/>" }) + lineBreak);
+                    tw.Write(string.Concat(new object[] { depth, "<sound name=\"", EscapeString(property7.Name), "\" length=\"", property7.Length.ToString(), "\" basehead=\"", Convert.ToBase64String(property7.Header), "\" basedata=\"", Convert.ToBase64String(property7.GetBytes(false)), "\"/>" }) + lineBreak);
                 else
                     tw.Write(depth + "<sound name=\"" + EscapeString(property7.Name) + "\"/>" + lineBreak);
             }
@@ -762,9 +762,11 @@ namespace MapleLib.WzLib.Serialization
                     return nullProp;
                 
                 case "sound":
-                    WzSoundProperty sound = new WzSoundProperty(element.GetAttribute("name"));
-                    if (!element.HasAttribute("basedata")) throw new NoBase64DataException("no base64 data in sound element with name " + sound.Name);
-                    sound.SetDataUnsafe(Convert.FromBase64String(element.GetAttribute("basedata")));
+                    if (!element.HasAttribute("basedata") || !element.HasAttribute("basehead") || !element.HasAttribute("length")) throw new NoBase64DataException("no base64 data in sound element with name " + element.GetAttribute("name"));
+                    WzSoundProperty sound = new WzSoundProperty(element.GetAttribute("name"),
+                        int.Parse(element.GetAttribute("length")), 
+                        Convert.FromBase64String(element.GetAttribute("basehead")), 
+                        Convert.FromBase64String(element.GetAttribute("basedata")));
                     return sound;
                 
                 case "string":

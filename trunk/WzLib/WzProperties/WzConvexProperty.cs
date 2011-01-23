@@ -48,28 +48,7 @@ namespace MapleLib.WzLib.WzProperties
             return clone;
         }
 
-        public void AddProperty(IExtended prop)
-        {
-            ((IWzImageProperty)prop).Parent = this;
-            //((IWzImageProperty)prop).ParentImage = this.ParentImage;
-//            if (prop is IExtended)
-                properties.Add(prop);
-//            else throw new Exception("Convex can only hold extended properties");
-        }
-
-        public void AddProperties(IExtended[] props)
-        {
-            foreach (IExtended prop in props)
-            {
-                AddProperty(prop);
-            }
-        }
-        public void RemoveProperty(IWzImageProperty prop)
-        {
-            properties.Remove(/*(IExtended)*/prop);
-        }
-
-		/// <summary>
+    	/// <summary>
 		/// The parent of the object
 		/// </summary>
 		public override IWzObject Parent { get { return parent; } internal set { parent = value; } }
@@ -180,10 +159,6 @@ namespace MapleLib.WzLib.WzProperties
 		#endregion
 
 		#region Custom Members
-/*		/// <summary>
-		/// The WzExtendedPropertys contained in this WzConvexProperty
-		/// </summary>
-        public List<IExtended> ExtendedProperties { get { return properties; } }*/
 		/// <summary>
 		/// Creates a blank WzConvexProperty
 		/// </summary>
@@ -205,7 +180,6 @@ namespace MapleLib.WzLib.WzProperties
             if (!(prop is IExtended))
                 throw new Exception("Property is not IExtended");
             prop.Parent = this;
-            //prop.ParentImage = this.ParentImage;
 			properties.Add((IExtended)prop);
 		}
 
@@ -215,8 +189,15 @@ namespace MapleLib.WzLib.WzProperties
                 AddProperty(property);
         }
 
+        public void RemoveProperty(IWzImageProperty prop)
+        {
+            prop.Parent = null;
+            properties.Remove(prop);
+        }
+
 		public void ClearProperties()
 		{
+            foreach (IWzImageProperty prop in properties) prop.Parent = null;
 			properties.Clear();
 		}
 

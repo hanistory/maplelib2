@@ -44,17 +44,47 @@ namespace MapleLib.WzLib
         internal bool parseEverything = false;
 		#endregion
 
-        public WzImage DeepClone()
+        #region Constructors\Destructors
+        /// <summary>
+        /// Creates a blank WzImage
+        /// </summary>
+        public WzImage() { }
+        /// <summary>
+        /// Creates a WzImage with the given name
+        /// </summary>
+        /// <param name="name">The name of the image</param>
+        public WzImage(string name)
         {
-            if (reader != null && !parsed) ParseImage();
-            WzImage clone = (WzImage)MemberwiseClone();
-            clone.properties = new List<IWzImageProperty>();
-            foreach (IWzImageProperty prop in properties)
-                clone.properties.Add(prop.DeepClone());
-            return clone;
+            this.name = name;
+        }
+        public WzImage(string name, Stream dataStream, WzMapleVersion mapleVersion)
+        {
+            this.name = name;
+            this.reader = new WzBinaryReader(dataStream, WzTool.GetIvByMapleVersion(mapleVersion));
+        }
+        internal WzImage(string name, WzBinaryReader reader)
+        {
+            this.name = name;
+            this.reader = reader;
+            this.blockStart = (int)reader.BaseStream.Position;
         }
 
-		/// <summary>
+        public override void Dispose()
+        {
+            name = null;
+            reader = null;
+            if (properties != null)
+            {
+                foreach (IWzImageProperty prop in properties)
+                    prop.Dispose();
+                properties.Clear();
+                properties = null;
+            }
+        }
+        #endregion
+
+        #region Inherited Members
+        /// <summary>
 		/// The parent of the object
 		/// </summary>
 		public override IWzObject Parent { get { return parent; } internal set { parent = value; } }
@@ -84,6 +114,10 @@ namespace MapleLib.WzLib
 		/// </summary>
 		public uint Offset { get { return offset; } set { offset = value; } }
 		public int BlockStart { get { return blockStart; } }
+        /// <summary>
+        /// The WzObjectType of the image
+        /// </summary>
+        public override WzObjectType ObjectType { get { if (reader != null) if (!parsed) ParseImage(); return WzObjectType.Image; } }
 		/// <summary>
 		/// The properties contained in the image
 		/// </summary>
@@ -98,6 +132,16 @@ namespace MapleLib.WzLib
                 return properties;
 			}
 		}
+
+        public WzImage DeepClone()
+        {
+            if (reader != null && !parsed) ParseImage();
+            WzImage clone = (WzImage)MemberwiseClone();
+            clone.properties = new List<IWzImageProperty>();
+            foreach (IWzImageProperty prop in properties)
+                clone.properties.Add(prop.DeepClone());
+            return clone;
+        }
 
 		/// <summary>
 		/// Gets a wz property by it's name
@@ -115,8 +159,10 @@ namespace MapleLib.WzLib
 				return null;
 			}
 		}
+        #endregion 
 
-		/// <summary>
+        #region Custom Members
+        /// <summary>
 		/// Gets a WzImageProperty from a path
 		/// </summary>
 		/// <param name="path">path to object</param>
@@ -155,50 +201,48 @@ namespace MapleLib.WzLib
 			}
 			return ret;
 		}
-		/// <summary>
-		/// The WzObjectType of the image
-		/// </summary>
-		public override WzObjectType ObjectType { get { if (reader != null) if (!parsed) ParseImage(); return WzObjectType.Image; } }
 
-		/// <summary>
-		/// Creates a blank WzImage
-		/// </summary>
-		public WzImage() { }
-		/// <summary>
-		/// Creates a WzImage with the given name
-		/// </summary>
-		/// <param name="name">The name of the image</param>
-		public WzImage(string name)
-		{
-			this.name = name;
-		}
-		public WzImage(string name, Stream dataStream, WzMapleVersion mapleVersion)
-		{
-			this.name = name;
-			this.reader = new WzBinaryReader(dataStream, WzTool.GetIvByMapleVersion(mapleVersion));
-		}
-		internal WzImage(string name, WzBinaryReader reader)
-		{
-			this.name = name;
-			this.reader = reader;
-			this.blockStart = (int)reader.BaseStream.Position;
-		}
+        /// <summary>
+        /// Adds a property to the image
+        /// </summary>
+        /// <param name="prop">Property to add</param>
+        public void AddProperty(IWzImageProperty prop)
+        {
+            prop.Parent = this;
+            if (reader != null && !parsed) ParseImage();
+            properties.Add(prop);
+        }
+        public void AddProperties(List<IWzImageProperty> props)
+        {
+            foreach (IWzImageProperty prop in props)
+            {
+                AddProperty(prop);
+            }
+        }
+        /// <summary>
+        /// Removes a property by name
+        /// </summary>
+        /// <param name="name">The name of the property to remove</param>
+        public void RemoveProperty(IWzImageProperty prop)
+        {
+            if (reader != null && !parsed) ParseImage();
+            prop.Parent = null;
+            properties.Remove(prop);
+        }
+        public void ClearProperties()
+        {
+            foreach (IWzImageProperty prop in properties) prop.Parent = null;
+            properties.Clear();
+        }
 
-		public override void Dispose()
-		{
-			name = null;
-			reader = null;
-			if (properties != null)
-			{
-				foreach (IWzImageProperty prop in properties)
-					prop.Dispose();
-				properties.Clear();
-				properties = null;
-			}
-		}
+        public override void Remove()
+        {
+            ((WzDirectory)Parent).RemoveImage(this);
+        }
+        #endregion
 
-
-		/// <summary>
+        #region Parsing Methods
+        /// <summary>
 		/// Parses the image from the wz filetod
 		/// </summary>
 		/// <param name="wzReader">The BinaryReader that is currently reading the wz file</param>
@@ -288,42 +332,6 @@ namespace MapleLib.WzLib
 				throw new Exception("Under Construction");
 			}
 		}
-
-		/// <summary>
-		/// Adds a property to the image
-		/// </summary>
-		/// <param name="prop">Property to add</param>
-		public void AddProperty(IWzImageProperty prop)
-		{
-            prop.Parent = this;
-            //prop.ParentImage = this;
-			if (reader != null) if (!parsed) ParseImage();
-            properties.Add(prop);
-		}
-		public void AddProperties(List<IWzImageProperty> props)
-		{
-			foreach (IWzImageProperty prop in props)
-			{
-				AddProperty(prop);
-			}
-		}
-		/// <summary>
-		/// Removes a property by name
-		/// </summary>
-		/// <param name="name">The name of the property to remove</param>
-        public void RemoveProperty(IWzImageProperty prop)
-		{
-			if (reader != null) if (!parsed) ParseImage();
-            properties.Remove(prop);
-		}
-		public void ClearProperties()
-		{
-			properties.Clear();
-		}
-
-        public override void Remove()
-        {
-            ((WzDirectory)Parent).RemoveImage(this);
-        }
+        #endregion
 	}
 }

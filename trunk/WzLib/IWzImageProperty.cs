@@ -170,27 +170,27 @@ namespace MapleLib.WzLib
             switch (iname)
             {
                 case "Property":
-                    WzSubProperty subProp = new WzSubProperty(name) { Parent = parent/*, ParentImage = imgParent*/ };
+                    WzSubProperty subProp = new WzSubProperty(name) { Parent = parent };
                     reader.BaseStream.Position += 2;
                     subProp.AddProperties(IWzImageProperty.ParsePropertyList(offset, reader, subProp, imgParent));
                     return subProp;
                 case "Canvas":
-                    WzCanvasProperty canvasProp = new WzCanvasProperty(name) { Parent = parent/*, ParentImage = imgParent*/ };
+                    WzCanvasProperty canvasProp = new WzCanvasProperty(name) { Parent = parent };
                     reader.BaseStream.Position++;
                     if (reader.ReadByte() == 1)
                     {
                         reader.BaseStream.Position += 2;
                         canvasProp.AddProperties(IWzImageProperty.ParsePropertyList(offset, reader, canvasProp, imgParent));
                     }
-                    canvasProp.PngProperty = new WzPngProperty(reader, imgParent.parseEverything) { Parent = canvasProp/*, ParentImage = imgParent*/ };
+                    canvasProp.PngProperty = new WzPngProperty(reader, imgParent.parseEverything) { Parent = canvasProp };
                     return canvasProp;
                 case "Shape2D#Vector2D":
-                    WzVectorProperty vecProp = new WzVectorProperty(name) { Parent = parent/*, ParentImage = imgParent*/ };
-                    vecProp.X = new WzCompressedIntProperty("X", reader.ReadCompressedInt()) { Parent = vecProp/*, ParentImage = imgParent*/ };
-                    vecProp.Y = new WzCompressedIntProperty("Y", reader.ReadCompressedInt()) { Parent = vecProp/*, ParentImage = imgParent*/ };
+                    WzVectorProperty vecProp = new WzVectorProperty(name) { Parent = parent };
+                    vecProp.X = new WzCompressedIntProperty("X", reader.ReadCompressedInt()) { Parent = vecProp };
+                    vecProp.Y = new WzCompressedIntProperty("Y", reader.ReadCompressedInt()) { Parent = vecProp };
                     return vecProp;
                 case "Shape2D#Convex2D":
-                    WzConvexProperty convexProp = new WzConvexProperty(name) { Parent = parent/*, ParentImage = imgParent*/ };
+                    WzConvexProperty convexProp = new WzConvexProperty(name) { Parent = parent };
                     int convexEntryCount = reader.ReadCompressedInt();
                     convexProp.WzProperties.Capacity = convexEntryCount; //performance thing
                     for (int i = 0; i < convexEntryCount; i++)
@@ -199,17 +199,16 @@ namespace MapleLib.WzLib
                     }
                     return convexProp;
                 case "Sound_DX8":
-                    WzSoundProperty soundProp = new WzSoundProperty(name) { Parent = parent/*, ParentImage = imgParent*/ };
-                    soundProp.ParseSound(reader, imgParent.parseEverything);
+                    WzSoundProperty soundProp = new WzSoundProperty(name, reader, imgParent.parseEverything) { Parent = parent };
                     return soundProp;
                 case "UOL":
                     reader.BaseStream.Position++;
                     switch (reader.ReadByte())
                     {
                         case 0:
-                            return new WzUOLProperty(name, reader.ReadString()) { Parent = parent/*, ParentImage = imgParent*/ };
+                            return new WzUOLProperty(name, reader.ReadString()) { Parent = parent };
                         case 1:
-                            return new WzUOLProperty(name, reader.ReadStringAtOffset(offset + reader.ReadInt32())) { Parent = parent/*, ParentImage = imgParent*/ };
+                            return new WzUOLProperty(name, reader.ReadStringAtOffset(offset + reader.ReadInt32())) { Parent = parent };
                     }
                     throw new Exception("Unsupported UOL type");
                 default:
@@ -221,7 +220,7 @@ namespace MapleLib.WzLib
         {
             writer.Write((byte)9);
             long beforePos = writer.BaseStream.Position;
-            writer.Write(0); // Placeholder
+            writer.Write((Int32)0); // Placeholder
             property.WriteValue(writer);
             int len = (int)(writer.BaseStream.Position - beforePos);
             long newPos = writer.BaseStream.Position;

@@ -167,7 +167,6 @@ namespace MapleLib.WzLib.WzProperties
 		public void AddProperty(IWzImageProperty prop)
 		{
             prop.Parent = this;
-            //prop.ParentImage = this.ParentImage;
             properties.Add(prop);
 		}
 		public void AddProperties(List<IWzImageProperty> props)
@@ -179,6 +178,7 @@ namespace MapleLib.WzLib.WzProperties
 		}
         public void RemoveProperty(IWzImageProperty prop)
 		{
+            prop.Parent = null;
             properties.Remove(prop);
 		}
 		/// <summary>
@@ -186,6 +186,7 @@ namespace MapleLib.WzLib.WzProperties
 		/// </summary>
 		public void ClearProperties()
 		{
+            foreach (IWzImageProperty prop in properties) prop.Parent = null;
 			properties.Clear();
 		}
 		#endregion
