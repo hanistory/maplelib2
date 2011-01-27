@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.IO;
 using MapleLib.WzLib.Util;
+using System;
 
 namespace MapleLib.WzLib.WzProperties
 {
@@ -54,10 +55,6 @@ namespace MapleLib.WzLib.WzProperties
 		/// The parent of the object
 		/// </summary>
 		public override IWzObject Parent { get { return parent; } internal set { parent = value; } }
-		/*/// <summary>
-		/// The image that this property is contained in
-		/// </summary>
-		public override WzImage ParentImage { get { return imgParent; } internal set { imgParent = value; } }*/
 		/// <summary>
 		/// The WzPropertyType of the property
 		/// </summary>
@@ -90,7 +87,6 @@ namespace MapleLib.WzLib.WzProperties
 				foreach (IWzImageProperty iwp in properties)
 					if (iwp.Name.ToLower() == name.ToLower())
                         return iwp;
-				//throw new KeyNotFoundException("A wz property with the specified name was not found");
 				return null;
 			}
 		}
@@ -155,7 +151,7 @@ namespace MapleLib.WzLib.WzProperties
 			writer.WriteCompressedInt(PngProperty.Height);
 			writer.WriteCompressedInt(PngProperty.format);
 			writer.Write((byte)PngProperty.format2);
-			writer.Write(0);
+			writer.Write((Int32)0);
             byte[] bytes = PngProperty.GetCompressedBytes(false);
             writer.Write(bytes.Length + 1);
 			writer.Write((byte)0);

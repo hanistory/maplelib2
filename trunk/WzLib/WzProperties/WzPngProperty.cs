@@ -170,8 +170,10 @@ namespace MapleLib.WzLib.WzProperties
                 wzReader.BaseStream.Position = pos;
                 if (!saveInMemory)
                 {
+                    //were removing the referance to compressedBytes, so a backup for the ret value is needed
+                    byte[] returnBytes = compressedBytes;
                     compressedBytes = null;
-                    return compressedBytes;
+                    return returnBytes;
                 }
             }
             return compressedBytes;
