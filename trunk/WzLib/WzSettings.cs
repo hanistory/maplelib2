@@ -216,10 +216,18 @@ namespace MapleLib.WzLib
             if (File.Exists(wzPath))
             {
                 WzFile wzFile = new WzFile(wzPath, 1337, WzMapleVersion.CLASSIC);
-                wzFile.ParseWzFile();
-                ExtractSettingsImage((WzImage)wzFile["UserSettings.img"], userSettingsType);
-                ExtractSettingsImage((WzImage)wzFile["ApplicationSettings.img"], appSettingsType);
-                wzFile.Dispose();
+                try
+                {
+                    wzFile.ParseWzFile();
+                    ExtractSettingsImage((WzImage)wzFile["UserSettings.img"], userSettingsType);
+                    ExtractSettingsImage((WzImage)wzFile["ApplicationSettings.img"], appSettingsType);
+                    wzFile.Dispose();
+                }
+                catch
+                {
+                    wzFile.Dispose();
+                    throw;
+                }
             }
         }
 
