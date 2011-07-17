@@ -76,7 +76,7 @@ namespace MapleLib.WzLib
 			writer.WriteLine(XmlUtil.Indentation(level) + XmlUtil.CloseTag(this.PropertyType.ToString()));
         }
 
-        public override IWzFile WzFileParent
+        public override /*I*/WzFile WzFileParent
         {
             get { return ParentImage.WzFileParent; }
         }

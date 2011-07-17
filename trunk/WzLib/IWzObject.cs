@@ -46,7 +46,7 @@ namespace MapleLib.WzLib
         /// <summary>
         /// Returns the parent WZ File
         /// </summary>
-        public abstract IWzFile WzFileParent { get; }
+        public abstract /*I*/WzFile WzFileParent { get; }
 
         public string FullPath
         {

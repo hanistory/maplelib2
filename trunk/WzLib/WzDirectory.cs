@@ -52,7 +52,7 @@ namespace MapleLib.WzLib
 		/// </summary>
 		public override WzObjectType ObjectType { get { return WzObjectType.Directory; } }
 
-        public override IWzFile WzFileParent
+        public override /*I*/WzFile WzFileParent
         {
             get { return wzFile; }
         }

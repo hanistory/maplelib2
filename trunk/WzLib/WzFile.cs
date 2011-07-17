@@ -26,7 +26,7 @@ namespace MapleLib.WzLib
 	/// <summary>
 	/// A class that contains all the information of a wz file
 	/// </summary>
-	public class WzFile : IWzFile
+	public class WzFile : IWzObject/*IWzFile*/
 	{
 		#region Fields
 		internal string path;
@@ -79,13 +79,13 @@ namespace MapleLib.WzLib
 
         public short Version { get { return fileVersion; } set { fileVersion = value; } }
 
-        public override string FilePath { get { return path; } }
+        public string FilePath { get { return path; } }
 
-        public override WzMapleVersion MapleVersion { get { return mapleVersion; } set { mapleVersion = value; } }
+        public WzMapleVersion MapleVersion { get { return mapleVersion; } set { mapleVersion = value; } }
 
 		public override IWzObject Parent { get { return null; } internal set { } }
 
-        public override IWzFile WzFileParent { get { return this; } }
+        public override /*I*/WzFile WzFileParent { get { return this; } }
 
 		public override void Dispose()
 		{
@@ -298,7 +298,7 @@ namespace MapleLib.WzLib
 		/// Saves a wz file to the disk, AKA repacking.
 		/// </summary>
 		/// <param name="path">Path to the output wz file</param>
-		public override void SaveToDisk(string path)
+		public void SaveToDisk(string path)
 		{
             WzIv = WzTool.GetIvByMapleVersion(mapleVersion);
 			CreateVersionHash();
