@@ -371,6 +371,7 @@ namespace MapleLib.WzLib.Serialization
                 ExportRecursion(((WzFile)currObj).WzDirectory, outPath);
             else if (currObj is WzDirectory)
             {
+                outPath += currObj.Name + @"\";
                 if (!Directory.Exists(outPath)) Directory.CreateDirectory(outPath);
                 foreach (WzDirectory subdir in ((WzDirectory)currObj).WzDirectories)
                     ExportRecursion(subdir, outPath + subdir.Name + @"\");
@@ -380,28 +381,32 @@ namespace MapleLib.WzLib.Serialization
             else if (currObj is WzCanvasProperty)
             {
                 Bitmap bmp = ((WzCanvasProperty)currObj).PngProperty.GetPNG(false);
-                string path = outPath + "png";
+                string path = outPath + currObj.Name + ".png";
                 bmp.Save(path, ImageFormat.Png);
                 //curr++;
             }
             else if (currObj is WzSoundProperty)
             {
-                string path = outPath + "mp3";
+                string path = outPath + currObj.Name + ".mp3";
                 ((WzSoundProperty)currObj).SaveToFile(path);
             }
             else if (currObj is WzImage)
             {
+                outPath += currObj.Name + @"\";
                 if (!Directory.Exists(outPath)) Directory.CreateDirectory(outPath);
                 bool parse = ((WzImage)currObj).Parsed;
                 if (!parse) ((WzImage)currObj).ParseImage();
                 foreach (IWzImageProperty subprop in ((IPropertyContainer)currObj).WzProperties)
-                    ExportRecursion(subprop, outPath + subprop.Name + ".");
+                    ExportRecursion(subprop, outPath);
                 if (!parse) ((WzImage)currObj).UnparseImage();
                 curr++;
             }
             else if (currObj is IPropertyContainer)
+            {
+                outPath += currObj.Name + ".";
                 foreach (IWzImageProperty subprop in ((IPropertyContainer)currObj).WzProperties)
-                    ExportRecursion(subprop, outPath + subprop.Name + ".");
+                    ExportRecursion(subprop, outPath);
+            }
             else if (currObj is WzUOLProperty)
                 ExportRecursion(((WzUOLProperty)currObj).LinkValue, outPath);
         }
