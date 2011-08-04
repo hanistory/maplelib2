@@ -122,9 +122,9 @@ namespace MapleLib.WzLib
                 case WzPropertyType.Double:
                     addedProp = new WzDoubleProperty(propName);
                     break;
-                case WzPropertyType.Sound:
+                /*case WzPropertyType.Sound:
                     addedProp = new WzSoundProperty(propName);
-                    break;
+                    break;*/
                 case WzPropertyType.String:
                     addedProp = new WzStringProperty(propName);
                     break;
