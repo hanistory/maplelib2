@@ -17,6 +17,7 @@
 using System.IO;
 using System;
 using MapleLib.WzLib.Util;
+using NAudio.Wave;
 
 namespace MapleLib.WzLib.WzProperties
 {
@@ -31,12 +32,12 @@ namespace MapleLib.WzLib.WzProperties
 		internal IWzObject parent;
         internal int len_ms;
         internal int frequency;
-        internal byte bps;
+        //internal byte bps;
         internal byte[] header;
 		//internal WzImage imgParent;
         internal WzBinaryReader wzReader;
         internal long offs;
-        public static readonly byte[] soundHeaderMask = new byte[] { 0x02, 0x83, 0xEB, 0x36, 0xE4, 0x4F, 0x52, 0xCE, 0x11, 0x9F, 0x53, 0x00, 0x20, 0xAF, 0x0B, 0xA7, 0x70, 0x8B, 0xEB, 0x36, 0xE4, 0x4F, 0x52, 0xCE, 0x11, 0x9F, 0x53, 0x00, 0x20, 0xAF, 0x0B, 0xA7, 0x70, 0x00, 0x01, 0x81, 0x9F, 0x58, 0x05, 0x56, 0xC3, 0xCE, 0x11, 0xBF, 0x01, 0x00, 0xAA, 0x00, 0x55, 0x59, 0x5A, 0x1E, 0x55, 0x00, 0x02, 0x00,/*FRQ 56*/0xAA, 0xBB, 0xCC, 0xDD/*/FRQ 59*/, /*bps 60*/ 0xEE, 0x27, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x0A, 0x02, 0x01, 0x00, 0x00, 0x00 };
+        public static readonly byte[] soundHeaderMask = new byte[] { 0x02, 0x83, 0xEB, 0x36, 0xE4, 0x4F, 0x52, 0xCE, 0x11, 0x9F, 0x53, 0x00, 0x20, 0xAF, 0x0B, 0xA7, 0x70, 0x8B, 0xEB, 0x36, 0xE4, 0x4F, 0x52, 0xCE, 0x11, 0x9F, 0x53, 0x00, 0x20, 0xAF, 0x0B, 0xA7, 0x70, 0x00, 0x01, 0x81, 0x9F, 0x58, 0x05, 0x56, 0xC3, 0xCE, 0x11, 0xBF, 0x01, 0x00, 0xAA, 0x00, 0x55, 0x59, 0x5A, 0x1E, 0x55, 0x00, 0x02, 0x00,/*FRQ 56*/0xAA, 0xBB, 0xCC, 0xDD/*/FRQ 59*/, 0x10, 0x27, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x0A, 0x02, 0x01, 0x00, 0x00, 0x00 };
 		#endregion
 
 		#region Inherited Members
@@ -71,7 +72,7 @@ namespace MapleLib.WzLib.WzProperties
 		public override WzPropertyType PropertyType { get { return WzPropertyType.Sound; } }
 		public override void WriteValue(WzBinaryWriter writer)
 		{
-            this.header = CreateHeader(this.frequency, this.bps);
+            this.header = CreateHeader(this.frequency);
             byte[] data = GetBytes(false);
 			writer.WriteStringValue("Sound_DX8", 0x73, 0x1B);
 			writer.Write((byte)0);
@@ -110,7 +111,7 @@ namespace MapleLib.WzLib.WzProperties
         /// <summary>
         /// BPS of the mp3 file
         /// </summary>
-        public byte BPS { get { return bps; } set { bps = value; } }
+        //public byte BPS { get { return bps; } set { bps = value; } }
 		/// <summary>
 		/// Creates a WzSoundProperty with the specified name
 		/// </summary>
@@ -164,33 +165,30 @@ namespace MapleLib.WzLib.WzProperties
         /// <param name="file">The path to the sound file</param>
         public WzSoundProperty(string name, string file)
         {
-            MP3Header header = new MP3Header();
-            header.ReadMP3Information(file);
-            this.len_ms = header.intLength * 1000;
-            this.header = CreateHeader(header.intFrequency, (byte)(header.intBitRate / header.intFrequency));
-            byte[] frequencyBytes = BitConverter.GetBytes(header.intFrequency);
-            byte[] headerBytes = new byte[soundHeaderMask.Length];
-            Array.Copy(soundHeaderMask, headerBytes, headerBytes.Length);
-            for (int i = 0; i < 4; i++) { headerBytes[56 + i] = frequencyBytes[i]; }
-            this.header = headerBytes;
+            this.name = name;
+            Mp3FileReader reader = new Mp3FileReader(file);
+            this.len_ms = (int)((double)reader.Length * 1000d / (double)reader.WaveFormat.AverageBytesPerSecond);
+            this.frequency = reader.WaveFormat.SampleRate;
+            //this.bps = (byte)reader.WaveFormat.BitsPerSample;
+            this.header = CreateHeader(this.frequency);
+            reader.Dispose();
             this.mp3bytes = File.ReadAllBytes(file);
-            ParseHeader();
         }
 
-        private byte[] CreateHeader(int frequency, byte bps)
+        public static byte[] CreateHeader(int frequency)
         {
             byte[] frequencyBytes = BitConverter.GetBytes(frequency);
             byte[] headerBytes = new byte[soundHeaderMask.Length];
             Array.Copy(soundHeaderMask, headerBytes, headerBytes.Length);
             Array.Copy(frequencyBytes, 0, headerBytes, 56, 4);
-            headerBytes[60] = bps;
+            //headerBytes[60] = bps;
             return headerBytes;
         }
 
         private void ParseHeader()
         {
             this.frequency = BitConverter.ToInt32(header, 56);
-            this.bps = header[60];
+            //this.bps = header[60];
         }
         #endregion
 
