@@ -140,7 +140,7 @@ namespace MapleLib.WzLib.WzProperties
 				if (linkVal == null)
 				{
 					string[] paths = val.Split('/');
-                    linkVal = (IWzObject)parent;
+                    linkVal = (IWzObject)this.parent;
                     string asdf = parent.FullPath;
 					foreach (string path in paths)
 					{
@@ -156,7 +156,11 @@ namespace MapleLib.WzLib.WzProperties
                                 linkVal = ((WzImage)linkVal)[path];
                             else if (linkVal is WzDirectory)
                                 linkVal = ((WzDirectory)linkVal)[path];
-                            else throw new System.Exception("Invalid linkVal");
+                            else
+                            {
+                                MapleLib.Helpers.ErrorLogger.Log(MapleLib.Helpers.ErrorLevel.Critical, "UOL got nexon'd at property: " + this.FullPath);
+                                return null;
+                            }
 						}
 					}
 				}
